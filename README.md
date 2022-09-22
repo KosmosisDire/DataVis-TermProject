@@ -1,6 +1,7 @@
 # Data Vis Term Project
 
-This project conains many custom widgets specific to this project.
+![image](https://user-images.githubusercontent.com/39423700/191661025-f3f41ee0-13b5-4251-84f8-ed5e5d34c135.png)
+
 
 ## Libraries Needed
 - [pyqt6](https://pypi.org/project/PyQt6/)
