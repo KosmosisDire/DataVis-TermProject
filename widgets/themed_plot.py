@@ -1,3 +1,4 @@
+import math
 import random
 from time import time
 from typing import List, Tuple
@@ -24,18 +25,19 @@ class ThemedPlot(QWidget):
 
         self.painter_path: QPainterPath = None
 
-        self.time_range = GlobalSettings.time_range
-        self.aggregation = GlobalSettings.aggregation_seconds
-        self.local_time = GlobalSettings.local_time
-
         GlobalSettings.instance.time_range_changed.connect(self.update_data)
-        GlobalSettings.instance.aggregation_changed.connect(self.update_plot)
+        GlobalSettings.instance.aggregation_changed.connect(self.update_data)
         GlobalSettings.instance.local_time_changed.connect(self.update_plot)
 
         self.setStyleSheet(f"""
             background-color: {Styles.theme.dark_background_color_hex};
             border-radius: {Styles.theme.corner_radius}px;
         """)
+
+        self.color = random.choice(Styles.theme.data_colors_hex)
+
+        self.max_value: float = 0
+        self.min_value: float = 0
 
         self.update_data()
 
@@ -63,64 +65,70 @@ class ThemedPlot(QWidget):
     def bottom_margin(self) -> int:
         return self.contentsMargins().bottom()
 
+    def round_down_to_nearest(self, value: int, nearest: int) -> int:
+        return math.floor(value / nearest) * nearest
+
+    def round_up_to_nearest(self, value: int, nearest: int) -> int:
+        return math.ceil(value / nearest) * nearest
+
     def update_data(self):
-        print("updating data")
-        self.data = DataHandler.get(*GlobalSettings.time_range, self.column_name)
-        self.timestamps = DataHandler.get(*GlobalSettings.time_range, "Unix Timestamp (UTC)")
+        rounded_time_range = (self.round_down_to_nearest(GlobalSettings.time_range[0], GlobalSettings.aggregation_seconds * 100), self.round_up_to_nearest(GlobalSettings.time_range[1], GlobalSettings.aggregation_seconds * 100))
+        self.data = DataHandler.get(*rounded_time_range, self.column_name)
+        self.timestamps = DataHandler.get(*rounded_time_range, "Unix Timestamp (UTC)")
         self.timestamps = [timestamp // 1000 for timestamp in self.timestamps]
         self.update_plot()
 
+
+    def timestamp_to_x(self, timestamp: int) -> int:
+        return int(self.width() * (timestamp - GlobalSettings.time_range[0]) / (GlobalSettings.time_range[1] - GlobalSettings.time_range[0])) + self.left()
+
+    def value_to_y(self, value:float, max_value:float, min_value:float) -> int:
+        return int(self.height() * (1 - (value - min_value) / (max_value - min_value))) + self.top()
+
+
     def update_plot(self):
+        
         if(len(self.data) == 0):
             self.update()
             return
 
-        max_value: float = max(self.data)
-
         self.painter_path = QPainterPath()
 
-        x_pos = self.left()
-        y_pos = int(self.height() * (1 - self.data[0] / max_value)) + self.top()
-        self.painter_path.moveTo(x_pos, y_pos)
+        if self.max_value == 0:
+            self.max_value = max(self.data)
+            self.min_value = min(self.data)
 
-        avg: int = 0
+        self.max_value = (max(self.data) * 1.01 + self.max_value) / 2 # smooth out jumps in the min and max values
+        self.min_value = (min(self.data) * 0.99  + self.min_value) / 2 # smooth out jumps in the min and max values
+
+        # move path to the first point
+        self.painter_path.moveTo(self.timestamp_to_x(self.timestamps[0]), self.value_to_y(self.data[0], self.max_value, self.min_value))
+
+        y_avg: int = 0
+        x_avg: int = 0
         counter: int = 0
-        i: int = 0
-        for value in self.data:
-            if(i == 0):
-                i += 1
-                continue
-
+        for i in range(1, len(self.data)):
             timestamp: int = self.timestamps[i]
+            value: float = self.data[i]
 
-            x_pos = int((self.width() * (timestamp - self.timestamps[0])) / (self.timestamps[-1] - self.timestamps[0])) + self.left()
-            y_pos = int(self.height() * (1 - value / max_value)) + self.top()
-            avg += y_pos
+            x_pos = self.timestamp_to_x(timestamp)
+            y_pos = self.value_to_y(value, self.max_value, self.min_value)
+            
+            y_avg += y_pos
+            x_avg += x_pos
 
             counter += 1
-            i += 1
             if timestamp % GlobalSettings.aggregation_seconds == 0:
-                avg /= counter
-                self.painter_path.lineTo(x_pos, avg)
-                avg = 0
+                y_avg /= counter
+                x_avg /= counter
+                self.painter_path.lineTo(x_avg, y_avg)
+                y_avg = 0
+                x_avg = 0
                 counter = 0
 
         self.update()
-
-    def check_for_settings_change(self):
-        if self.time_range != GlobalSettings.time_range:
-            self.time_range = GlobalSettings.time_range
-            self.update_data()
-
-        if self.aggregation != GlobalSettings.aggregation_seconds or self.local_time != GlobalSettings.local_time:
-            self.time_range = GlobalSettings.time_range
-            self.aggregation = GlobalSettings.aggregation_seconds
-            self.local_time = GlobalSettings.local_time
-            self.update_plot()
         
     def paintEvent(self, event: QPaintEvent):
-
-        self.check_for_settings_change()
 
         if len(self.data) == 0:
             return
@@ -130,7 +138,7 @@ class ThemedPlot(QWidget):
 
         # paint plot
         painter.setBrush(QBrush(QColor("transparent")))
-        painter.setPen(QPen(QColor(Styles.theme.data_colors_hex[0]), 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+        painter.setPen(QPen(QColor(self.color), 2, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 
         painter.drawPath(self.painter_path)
 

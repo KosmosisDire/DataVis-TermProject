@@ -111,28 +111,35 @@ class TimeRangePicker(QWidget):
         painter.drawText(self._start_rect.right() - self.left_bubble.width()-8, self.bottom() + 2 + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, datetime.fromtimestamp(self.start_time).strftime("%b %d, %H:%M"))
         painter.drawText(self._end_rect.left()+8, self.bottom() + 2 + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, datetime.fromtimestamp(self.end_time).strftime("%b %d, %H:%M"))
     
+    def value_to_y(self, value:float, max_value:float, min_value:float) -> int:
+        return int(self.height() * (1 - (value - min_value) / (max_value - min_value))) + self.top()
+
     def set_plot_data(self, data: list):
         self.display_data = data
+
         max_value: float = max(self.display_data)
+        min_value: float = min(self.display_data)
 
         self.painter_path = QPainterPath()
-        self.painter_path.moveTo(self.left(), self.bottom())
+        self.painter_path.moveTo(self.left(), self.value_to_y(self.display_data[0], max_value, min_value))
 
         divisor = max(int(min(len(self.display_data), 1000) / self.width() * 7), 2)
 
-        avg: int = 0
+        y_avg: int = 0
         counter: int = 0
-        i: int = 0
-        for value in self.display_data:
-            x_pos = int((self.width() * (float(i) / len(self.display_data)))) + self.left()
-            y_pos = int(self.height() * (1 - value / max_value)) + self.top()
-            avg += y_pos / divisor
+        for i in range(1, len(self.display_data)):
+            value: float = self.display_data[i]
+
+            x_pos = int(self.left() + i / len(self.display_data) * self.width())
+            y_pos = self.value_to_y(value, max_value, min_value)
+            
+            y_avg += y_pos
 
             counter += 1
-            i += 1
             if counter == divisor:
-                self.painter_path.lineTo(x_pos, avg)
-                avg = 0
+                y_avg /= counter
+                self.painter_path.lineTo(x_pos, y_avg)
+                y_avg = 0
                 counter = 0
 
         self.update()   

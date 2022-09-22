@@ -63,7 +63,7 @@ class MainWindow(ProjectWindow):
         right_area.setLayout(QVBoxLayout())
         layout.addWidget(right_area)
 
-        graph_header = BlankWidget(Styles.theme.mid_background_color_hex)
+        graph_header = BlankWidget()
         graph_header.setLayout(QVBoxLayout())
         right_area.addWidget(graph_header)
 
