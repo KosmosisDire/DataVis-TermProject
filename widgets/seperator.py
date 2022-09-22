@@ -1,0 +1,25 @@
+from PyQt6.QtWidgets import * 
+from PyQt6 import QtCore, QtGui
+from PyQt6.QtGui import * 
+from PyQt6.QtCore import *
+from styles import Styles
+
+from widgets.blank_widget import BlankWidget
+
+# adds a seperator line with space on either side
+class HorizontalSeperator(QWidget):
+    def __init__(self, spacing: int, thickness: int = 1):
+        super().__init__(None)
+        self.setFixedHeight(spacing)
+        self.thickness = thickness
+
+    def paintEvent(self, event: QPaintEvent):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # main panel
+        painter.setPen(QPen(Qt.GlobalColor.transparent))
+        painter.setBrush(QBrush(Styles.theme.seperator_color))
+        painter.drawRect(0, self.height()//2 - self.thickness//2, self.width(), self.thickness)
+        
+
