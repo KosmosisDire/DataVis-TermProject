@@ -97,6 +97,7 @@ class MainWindow(ProjectWindow):
         
         sidebar.addWidget(HorizontalSeperator(Styles.theme.medium_spacing))
 
+        # View heading
         sidebar.addWidget(ColoredText("View: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
         interval_dropdown = ThemedDropdown(["30 Seconds", "1 Minute", "5 Minutes", "30 Minutes", "1 Hour", "6 Hours", "12 Hours", "1 Day"], GlobalSettings.aggregation_changed_callback)
         sidebar.addWidget(LabeledWidget("Time Interval:", interval_dropdown))

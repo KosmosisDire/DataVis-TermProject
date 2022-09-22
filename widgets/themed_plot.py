@@ -78,28 +78,32 @@ class ThemedPlot(QWidget):
         max_value: float = max(self.data)
 
         self.painter_path = QPainterPath()
-        self.painter_path.moveTo(self.left(), self.bottom())
 
-        last_timestamp: int = self.timestamps[0]
+        x_pos = self.left()
+        y_pos = int(self.height() * (1 - self.data[0] / max_value)) + self.top()
+        self.painter_path.moveTo(x_pos, y_pos)
 
         avg: int = 0
         counter: int = 0
         i: int = 0
         for value in self.data:
+            if(i == 0):
+                i += 1
+                continue
+
             timestamp: int = self.timestamps[i]
 
-            x_pos = int((self.width() * (float(i) / len(self.data)))) + self.left()
+            x_pos = int((self.width() * (timestamp - self.timestamps[0])) / (self.timestamps[-1] - self.timestamps[0])) + self.left()
             y_pos = int(self.height() * (1 - value / max_value)) + self.top()
             avg += y_pos
 
             counter += 1
             i += 1
-            if timestamp - last_timestamp >= GlobalSettings.aggregation_seconds:
+            if timestamp % GlobalSettings.aggregation_seconds == 0:
                 avg /= counter
                 self.painter_path.lineTo(x_pos, avg)
                 avg = 0
                 counter = 0
-                last_timestamp = timestamp
 
         self.update()
 
