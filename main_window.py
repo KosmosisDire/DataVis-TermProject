@@ -4,7 +4,7 @@ from time import sleep, time
 from typing import Any, Callable
 from joblib import Parallel, delayed
 
-from PyQt6.QtGui import QResizeEvent
+from PyQt6.QtGui import QResizeEvent, QPalette
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
                              QDateTimeEdit, QDial, QDoubleSpinBox,
                              QFontComboBox, QHBoxLayout, QLabel, QLCDNumber,
@@ -17,12 +17,12 @@ from pyqtgraph import PlotWidget, plot
 
 from styles import Styles
 from data_handler import DataHandler
-from widgets.blank_widget import Panel
+from widgets.panel import Panel
 from widgets.colored_text import ColoredText
 from widgets.horizontal_group import HorizontalGroup
 from widgets.labeled_widget import LabeledWidget
 from widgets.seperator import HorizontalSeperator
-from widgets.sidebar_widget import Sidebar
+from widgets.sidebar import Sidebar
 from widgets.themed_button import ThemedButton
 from widgets.themed_dropdown import ThemedDropdown
 from widgets.themed_radiobutton import ThemedRadioButton
@@ -51,8 +51,9 @@ class MainWindow(QMainWindow):
 
 
     def create_UI(self):
-        self.base = HorizontalGroup()
-        self.setStyleSheet(f"background-color: {Styles.theme.light_background_color_hex};")
+        background = Panel(Styles.theme.light_background_color_hex)
+        self.base = background.addWidget(HorizontalGroup())
+
         self.sidebar = self.base.addWidget(self.create_sidebar())
         right_area = self.base.addWidget(VerticalGroup())
         graph_header = right_area.addWidget(VerticalGroup())
@@ -69,7 +70,7 @@ class MainWindow(QMainWindow):
 
         self.scroll_area.addWidgets(self.graphs)
 
-        self.setCentralWidget(self.base)
+        self.setCentralWidget(background)
 
     def create_graphs(self):
         graph1 = ThemedPlot("Temperature", "Temp avg")

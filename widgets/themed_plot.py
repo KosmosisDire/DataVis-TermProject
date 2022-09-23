@@ -202,7 +202,7 @@ class ThemedPlot(CustomWidget):
 
         painter.setBrush(QBrush(Styles.theme.dark_background_color))
         painter.setPen(QPen(QColor("transparent")))
-        painter.drawRoundedRect(self.rect(), Styles.theme.corner_radius, Styles.theme.corner_radius)
+        painter.drawRoundedRect(self.rect(), Styles.theme.panel_radius, Styles.theme.panel_radius)
 
         # paint plot
         painter.setBrush(QBrush(QColor("transparent")))

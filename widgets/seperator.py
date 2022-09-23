@@ -4,7 +4,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from styles import Styles
 
-from widgets.blank_widget import Panel
+from widgets.panel import Panel
 from widgets.custom_widget import CustomWidget
 
 # adds a seperator line with space on either side

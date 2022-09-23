@@ -23,7 +23,7 @@ class ThemedDropdown(QComboBox):
                 background-color: {Styles.theme.button_color_hex};
                 color: {Styles.theme.button_text_color_hex};
                 border: 0px;
-                border-radius: {Styles.theme.corner_radius}px;
+                border-radius: {Styles.theme.control_radius}px;
                 font-size: {Styles.theme.button_font_size};
                 font-family: Segoe UI;
             }}
@@ -41,7 +41,7 @@ class ThemedDropdown(QComboBox):
                 width: {Styles.theme.button_height}px;
                 height: {Styles.theme.button_height}px;
                 border: 0px;
-                border-radius: {Styles.theme.corner_radius}px;
+                border-radius: {Styles.theme.control_radius}px;
             }}
             QComboBox QAbstractItemView 
             {{

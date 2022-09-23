@@ -20,7 +20,8 @@ class Sidebar(VerticalGroup):
         self._widthAnimation.setDuration(250)
         self._widthAnimation.setEasingCurve(QEasingCurve.Type.InOutCubic)
         self._widthAnimation.setStartValue(Styles.theme.min_sidebar_width)
-        self._widthAnimation.setEndValue(40)
+        self._widthAnimation.setEndValue(header_height//2)
+        
 
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 
@@ -30,24 +31,17 @@ class Sidebar(VerticalGroup):
 
         self.layout().setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        header_frame = super().addWidget(HorizontalGroup())
-        header_frame.setFixedHeight(self.header_height)
-        header_frame.layout().setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.header_frame = super().addWidget(HorizontalGroup())
+        self.header_frame.setFixedHeight(self.header_height)
 
         self.main_container = super().addWidget(VerticalGroup())
         self.main_container.layout().setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.toggle_button = QPushButton("", clicked=self.toggle)
-        self.toggle_button.resize(23, header_height)
         self.toggle_button.setIcon(QIcon("assets/collapse.png"))
-        self.toggle_button.setIconSize(QSize(18, header_height))
-        self.toggle_button.setStyleSheet(f"""
-        QPushButton 
-        {{ 
-            border: 0px;
-        }}
-        """)
+        self.toggle_button.setStyleSheet(f"border: 0px;")
         self._button_pixmap = QtGui.QPixmap("assets/collapse.png")
+
 
         self._button_animation = QtCore.QVariantAnimation(
             self,
@@ -56,8 +50,11 @@ class Sidebar(VerticalGroup):
             duration=200,
             valueChanged=self.on_button_animate
         )
+        self._button_animation.finished.connect(self.on_toggleanim_finished)
 
-        header_frame.addWidget(self.toggle_button)
+        self.header_frame.addWidget(self.toggle_button)
+
+
 
         self.expand()
 
@@ -85,21 +82,27 @@ class Sidebar(VerticalGroup):
         # main panel
         painter.setPen(QPen(Qt.GlobalColor.transparent))
         painter.setBrush(QBrush(Styles.theme.dark_background_color))
-        painter.drawRoundedRect(self.rect(), Styles.theme.corner_radius, Styles.theme.corner_radius)
-        painter.drawRect(QRectF(0, 0, Styles.theme.corner_radius, self.height())) # left corners are filled so they aren't rounded
+        painter.drawRoundedRect(self.rect(), Styles.theme.panel_radius, Styles.theme.panel_radius)
+        painter.drawRect(QRectF(0, 0, Styles.theme.panel_radius, self.height())) # left corners are filled so they aren't rounded
 
         # header
         painter.setBrush(QBrush(Styles.theme.light_background_color))
-        painter.drawRoundedRect(QRectF(0, 0, self.width(), self.header_height), Styles.theme.corner_radius, Styles.theme.corner_radius) 
-        painter.drawRect(QRectF(0, 0, Styles.theme.corner_radius, self.header_height)) # left corners are filled so they aren't rounded
-        painter.drawRect(QRectF(self.width() - Styles.theme.corner_radius, self.header_height-Styles.theme.corner_radius, Styles.theme.corner_radius, Styles.theme.corner_radius)) # bottom right corner is filled so it isn't rounded
+        painter.drawRoundedRect(QRectF(0, 0, self.width(), self.header_height), Styles.theme.panel_radius, Styles.theme.panel_radius) 
+        painter.drawRect(QRectF(0, 0, Styles.theme.panel_radius, self.header_height)) # left corners are filled so they aren't rounded
+        painter.drawRect(QRectF(self.width() - Styles.theme.panel_radius, self.header_height-Styles.theme.panel_radius, Styles.theme.panel_radius, Styles.theme.panel_radius)) # bottom right corner is filled so it isn't rounded
+
+    def on_toggleanim_finished(self):
+        if(self._collapsed):
+            self.main_container.setVisible(False)
+            self.toggle_button.setFixedSize(self.header_height//2, self.header_height)
+        else:
+            self.toggle_button.setFixedSize(self.header_height//2 + Styles.theme.medium_spacing, self.header_height)
 
     def collapse(self):
         self._widthAnimation.setDirection(QPropertyAnimation.Direction.Forward)
         self._widthAnimation.start()
         self._button_animation.setDirection(QPropertyAnimation.Direction.Forward)
         self._button_animation.start()
-        self._button_animation.finished.connect(lambda : (self.main_container.setVisible(False) if self._collapsed else None))
 
     def expand(self):
         self._widthAnimation.setDirection(QPropertyAnimation.Direction.Backward)
@@ -107,6 +110,8 @@ class Sidebar(VerticalGroup):
         self._button_animation.setDirection(QPropertyAnimation.Direction.Backward)
         self._button_animation.start()
         self.main_container.setVisible(True)
+        self.header_frame.layout().setAlignment(Qt.AlignmentFlag.AlignRight)
+        
 
     def toggle(self):
         if self._collapsed:

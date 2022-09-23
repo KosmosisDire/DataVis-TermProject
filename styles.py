@@ -31,7 +31,9 @@ class Styles:
         self.button_font_size: int = 11
         self.textbox_font_size: int = 10
 
-        self.corner_radius: int = 5
+        self.panel_radius: int = 10
+        self.control_radius = 5
+
         self.close_spacing: int = 8
         self.medium_spacing: int = 24
         self.large_spacing: int = 64
@@ -41,7 +43,6 @@ class Styles:
         self.min_sidebar_width: int = 350
 
         self.slider_handle_width = 7
-        self.micro_rounding_radius = 5
 
         Styles.theme = self
 

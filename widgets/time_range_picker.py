@@ -52,7 +52,7 @@ class TimeRangePicker(CustomWidget):
         self._dragging_start: bool = False
         self._dragging_end: bool = False
 
-        self.handle_radius = Styles.theme.micro_rounding_radius
+        self.handle_radius = Styles.theme.control_radius
         self.handle_width = Styles.theme.slider_handle_width
 
         self.display_data: list = []
@@ -77,7 +77,7 @@ class TimeRangePicker(CustomWidget):
         #draw background
         painter.setBrush(QBrush(Styles.theme.dark_background_color))
         draw_rect = QRect(self.left(), self.top(), self.width(), self.height())
-        painter.drawRoundedRect(draw_rect, Styles.theme.corner_radius, Styles.theme.corner_radius, Qt.SizeMode.AbsoluteSize)
+        painter.drawRoundedRect(draw_rect, Styles.theme.control_radius, Styles.theme.control_radius, Qt.SizeMode.AbsoluteSize)
 
         #draw data path
         painter.setBrush(QBrush(QColor("transparent")))
@@ -90,8 +90,8 @@ class TimeRangePicker(CustomWidget):
         painter.setOpacity(Styles.theme.shroud_opacity)
         left_shroud = QRect(self.left(), self.top(), self._start_rect.right() - self.left(), self.height())
         right_shroud = QRect(self._end_rect.right(), self.top(), self.width() - self._end_rect.right() + self.left(), self.height())
-        painter.drawRoundedRect(left_shroud, Styles.theme.corner_radius, Styles.theme.corner_radius, Qt.SizeMode.AbsoluteSize)
-        painter.drawRoundedRect(right_shroud, Styles.theme.corner_radius, Styles.theme.corner_radius, Qt.SizeMode.AbsoluteSize)
+        painter.drawRoundedRect(left_shroud, Styles.theme.control_radius, Styles.theme.control_radius, Qt.SizeMode.AbsoluteSize)
+        painter.drawRoundedRect(right_shroud, Styles.theme.control_radius, Styles.theme.control_radius, Qt.SizeMode.AbsoluteSize)
 
         # draw handles
         painter.setBrush(QBrush(Styles.theme.label_color))
