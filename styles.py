@@ -1,6 +1,7 @@
 from __future__ import annotations
 from cProfile import label
 from PyQt6.QtGui import QPalette, QColor, QFont
+from PyQt6.QtWidgets import QGraphicsDropShadowEffect
 
 
 
@@ -23,6 +24,8 @@ class Styles:
         self.shroud_opacity: float = 0.4
         self.seperator_color_hex: str = "#707070"
         self.data_colors_hex: list[str] = ["#EBB66F", "#A9EB6F", "#6FBDEB", "#EB6F80", "#FFFFFF"]
+        self.shadow_color_hex: str = "#000000"
+        self.shadow_opacity: float = 0.4
 
         self.update_colors_from_hex()
 
@@ -32,7 +35,10 @@ class Styles:
         self.textbox_font_size: int = 10
 
         self.panel_radius: int = 10
-        self.control_radius = 5
+        self.control_radius: int = 5
+        self.panel_shadow_radius: int = 24
+        self.control_shadow_radius: int = 12
+    
 
         self.close_spacing: int = 8
         self.medium_spacing: int = 24
@@ -43,6 +49,8 @@ class Styles:
         self.min_sidebar_width: int = 350
 
         self.slider_handle_width = 7
+
+        
 
         Styles.theme = self
 
@@ -64,6 +72,8 @@ class Styles:
         self.placeholder_text_color: QColor = QColor(self.placeholder_text_color_hex)
         self.shroud_color: QColor = QColor(self.shroud_color_hex)
         self.seperator_color: QColor = QColor(self.seperator_color_hex)
+        self.shadow_color: QColor = QColor(self.shadow_color_hex)
+        self.shadow_color.setAlphaF(self.shadow_opacity)
 
 blue_theme: Styles = Styles()
 blue_theme.header_text_color_hex = "#C5D0EC"

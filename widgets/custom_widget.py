@@ -5,6 +5,8 @@ from PyQt6 import QtCore, QtGui
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 
+from styles import Styles
+
 
 class CustomWidget(QWidget):
     def __init__(self):
@@ -56,3 +58,21 @@ class CustomWidget(QWidget):
     def addWidgets(self, widgets: List[QWidget]):
         for widget in widgets:
             self.addWidget(widget)
+
+    def fill(self, color: QColor | str):
+
+        c = QColor(color)
+
+        self.setAutoFillBackground(True)
+        palette = self.palette()
+        if palette is None:
+            palette = QPalette()
+        palette.setColor(QPalette.ColorRole.Window, c)
+        self.setPalette(palette)
+
+    def setShadow(self, blurRadius: int = Styles.theme.panel_shadow_radius, xOffset: int = 0, yOffset: int = 0, color: QtGui.QColor = Styles.theme.shadow_color):
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(blurRadius)
+        shadow.setOffset(xOffset, yOffset)
+        shadow.setColor(color)
+        self.setGraphicsEffect(shadow)

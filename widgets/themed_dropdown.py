@@ -11,7 +11,7 @@ from widgets.custom_widget import CustomWidget
 
 
 class ThemedDropdown(QComboBox):
-    def __init__(self, items: list, itemChanged: Callable[[str], Any] = None):
+    def __init__(self, items: list, itemChanged: Callable[[str], Any] = None, shadow: bool = True):
         super(ThemedDropdown, self).__init__()
         self.items: List[str] = []
         self.callback = itemChanged
@@ -54,9 +54,11 @@ class ThemedDropdown(QComboBox):
             }}
         """)
 
-        self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=6, xOffset=0, yOffset=3, color=QColor(0, 0, 0, 50)))
+        
         self.setFixedHeight(Styles.theme.button_height)
         self.setFont(QFont("Segoe UI", Styles.theme.button_font_size))
+        if shadow: self.setShadow()
+
 
         self.addItems(items)
         
@@ -71,4 +73,11 @@ class ThemedDropdown(QComboBox):
 
     def index_changed(self, index: int) -> None:
         self.callback(self.items[index])
+
+    def setShadow(self, blurRadius: int = Styles.theme.control_radius, xOffset: int = 0, yOffset: int = 4, color: QtGui.QColor = Styles.theme.shadow_color):
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(blurRadius)
+        shadow.setOffset(xOffset, yOffset)
+        shadow.setColor(color)
+        self.setGraphicsEffect(shadow)
         

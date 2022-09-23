@@ -12,7 +12,11 @@ class ThemedScrollArea(QScrollArea):
     def __init__(self):
         super().__init__()
         self.setWidgetResizable(True)
-        self.setStyleSheet("background-color: transparent; border: 0px; border-radius: 0px;")
+        self.setStyleSheet(f"""
+            background-color: transparent; 
+            border: 0px; 
+        """)
+
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setWidget(VerticalGroup())
         self.widgets: List[QWidget] = []

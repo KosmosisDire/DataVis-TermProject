@@ -56,7 +56,10 @@ class MainWindow(QMainWindow):
 
         self.sidebar = self.base.addWidget(self.create_sidebar())
         right_area = self.base.addWidget(VerticalGroup())
-        graph_header = right_area.addWidget(VerticalGroup())
+        right_area.stackUnder(self.sidebar)
+
+        graph_header: Panel = right_area.addWidget(Panel(Styles.theme.light_background_color_hex))
+        graph_header.setShadow(xOffset=4)
 
         time_range = DataHandler.get_time_range()
         self.time_picker = TimeRangePicker(75, datetime.fromtimestamp(time_range[0]), datetime.fromtimestamp(time_range[1]), GlobalSettings.time_range_changed_callback)
@@ -64,6 +67,7 @@ class MainWindow(QMainWindow):
         graph_header.addWidget(self.time_picker)
 
         self.scroll_area: ThemedScrollArea = right_area.addWidget(ThemedScrollArea())
+        self.scroll_area.setContentsMargins((0, Styles.theme.medium_spacing, 0, Styles.theme.medium_spacing))
         self.scroll_area.verticalScrollBar().valueChanged.connect(GlobalSettings.instance.time_range_changed.emit) #update the graphs when scrolling
 
         self.create_graphs()
@@ -92,6 +96,7 @@ class MainWindow(QMainWindow):
 
         #File heading
         sidebar = Sidebar()
+        sidebar.setShadow(xOffset=4)
         sidebar.getLayout().setSpacing(Styles.theme.close_spacing)
 
         sidebar.addWidget(ColoredText("File: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))

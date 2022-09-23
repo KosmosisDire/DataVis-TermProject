@@ -27,8 +27,6 @@ class Sidebar(VerticalGroup):
 
         self.header_height = header_height
 
-        self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=blurRadius, xOffset=4, yOffset=0, color=QColor(0, 0, 0, 100)))
-
         self.layout().setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.header_frame = super().addWidget(HorizontalGroup())

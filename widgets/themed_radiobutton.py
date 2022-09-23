@@ -10,7 +10,7 @@ from widgets.custom_widget import CustomWidget
 
 
 class ThemedRadioButton(QRadioButton):
-    def __init__(self, stateChanged: Callable[[bool], Any]):
+    def __init__(self, stateChanged: Callable[[bool], Any], shadow: bool = True):
         super().__init__("")
         self.setStyleSheet(f"""
             QRadioButton
@@ -32,5 +32,14 @@ class ThemedRadioButton(QRadioButton):
 
         stateChanged(self.isChecked())
 
+        if shadow: self.setShadow()
+
         if stateChanged:
             self.clicked.connect(stateChanged)
+
+    def setShadow(self, blurRadius: int = Styles.theme.control_radius, xOffset: int = 0, yOffset: int = 4, color: QtGui.QColor = Styles.theme.shadow_color):
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(blurRadius)
+        shadow.setOffset(xOffset, yOffset)
+        shadow.setColor(color)
+        self.setGraphicsEffect(shadow)

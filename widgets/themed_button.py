@@ -10,8 +10,8 @@ from widgets.custom_widget import CustomWidget
 
 
 class ThemedButton(QPushButton):
-    def __init__(self, text: str, clicked: callable = None):
-        super(ThemedButton, self).__init__(text, clicked=clicked)
+    def __init__(self, text: str, clicked: callable = None, shadow: bool = True):
+        QPushButton.__init__(self, text, clicked=clicked)
 
         self.setFixedHeight(Styles.theme.button_height)
 
@@ -32,8 +32,15 @@ class ThemedButton(QPushButton):
             }}
         """)
 
-        self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=6, xOffset=0, yOffset=3, color=QColor(0, 0, 0, 50)))
+        if shadow: self.setShadow()
         self.setFont(QFont("Segoe UI", Styles.theme.button_font_size))
+
+    def setShadow(self, blurRadius: int = Styles.theme.control_radius, xOffset: int = 0, yOffset: int = 4, color: QtGui.QColor = Styles.theme.shadow_color):
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(blurRadius)
+        shadow.setOffset(xOffset, yOffset)
+        shadow.setColor(color)
+        self.setGraphicsEffect(shadow)
 
 
         

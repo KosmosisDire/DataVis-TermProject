@@ -45,7 +45,7 @@ class ThemedPlot(CustomWidget):
         self.max_value: float = 0
         self.min_value: float = 0
 
-        self.setContentsMargins(Styles.theme.large_spacing, 0, Styles.theme.close_spacing, Styles.theme.medium_spacing)
+        self.setContentsMargins(Styles.theme.large_spacing, Styles.theme.close_spacing, Styles.theme.close_spacing, Styles.theme.medium_spacing)
 
         self.setFixedHeight(height + self.top() + self.bottom_margin())
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
@@ -201,8 +201,20 @@ class ThemedPlot(CustomWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         painter.setBrush(QBrush(Styles.theme.dark_background_color))
-        painter.setPen(QPen(QColor("transparent")))
+        painter.setPen(QPen(Styles.theme.mid_background_color.darker(180), 1))
         painter.drawRoundedRect(self.rect(), Styles.theme.panel_radius, Styles.theme.panel_radius)
+
+        # shadow
+        painter.setBrush(QBrush(QColor("transparent")))
+        painter.setPen(QPen(Styles.theme.mid_background_color.darker(170), 2))
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), Styles.theme.panel_radius, Styles.theme.panel_radius)
+
+        painter.setPen(QPen(Styles.theme.mid_background_color.darker(160), 3))
+        painter.drawRoundedRect(self.rect().adjusted(3, 3, -3, -3), Styles.theme.panel_radius, Styles.theme.panel_radius)
+
+        painter.setPen(QPen(Styles.theme.mid_background_color.darker(150), 4))
+        painter.drawRoundedRect(self.rect().adjusted(6, 6, -6, -6), Styles.theme.panel_radius, Styles.theme.panel_radius)
+
 
         # paint plot
         painter.setBrush(QBrush(QColor("transparent")))
@@ -212,7 +224,7 @@ class ThemedPlot(CustomWidget):
         painter.drawPath(self.painter_path)
 
     def timestamp_to_x(self, timestamp: int) -> int:
-        return int(self.width() * (timestamp - GlobalSettings.time_range[0]) / (GlobalSettings.time_range[1] - GlobalSettings.time_range[0])) + self.left()
+        return int(self.width() * (timestamp - GlobalSettings.time_range[0]) / max(GlobalSettings.time_range[1] - GlobalSettings.time_range[0], 0.001)) + self.left()
 
     def value_to_y(self, value:float, max_value:float, min_value:float) -> int:
         return int(self.height() * (1 - (value - min_value) / max(max_value - min_value, 0.001))) + self.top()

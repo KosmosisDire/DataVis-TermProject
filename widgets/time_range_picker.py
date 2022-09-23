@@ -32,7 +32,7 @@ class TimeRangePicker(CustomWidget):
         self.right_bubble: QPixmap = QPixmap("assets/right_bubble.png")
         self.left_bubble: QPixmap = QPixmap("assets/left_bubble.png")
 
-        self.setContentsMargins(Styles.theme.close_spacing + 100, Styles.theme.close_spacing, Styles.theme.close_spacing + 100, Styles.theme.close_spacing + self.left_bubble.height())
+        self.setContentsMargins(Styles.theme.close_spacing + 100, Styles.theme.close_spacing, Styles.theme.close_spacing + 100, Styles.theme.close_spacing)
         self.setMinimumWidth(640)
         self.setFixedHeight(height + self.top() + self.contentsMargins().bottom())
 
@@ -104,14 +104,17 @@ class TimeRangePicker(CustomWidget):
         painter.drawRect(QRectF(self._end_rect.x(), self.top(), self.handle_radius, self._end_rect.height()))
 
         # draw time label bubbles
-        painter.drawPixmap(self._start_rect.right() - self.left_bubble.width() + 4, self.bottom() + 2, self.left_bubble)
-        painter.drawPixmap(self._end_rect.left() - 4, self.bottom() + 2, self.right_bubble)
+        bubble_x_offset = 5
+        bubble_y_offset = -21
+
+        painter.drawPixmap(self._start_rect.left() - self.left_bubble.width() + bubble_x_offset, self.bottom() + bubble_y_offset, self.left_bubble)
+        painter.drawPixmap(self._end_rect.right() - bubble_x_offset, self.bottom() + bubble_y_offset, self.right_bubble)
 
         # draw time labels
         painter.setPen(QPen(Styles.theme.label_color, 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
         painter.setFont(QFont("Segoe UI", 8))
-        painter.drawText(self._start_rect.right() - self.left_bubble.width()-8, self.bottom() + 2 + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, datetime.fromtimestamp(self.start_time).strftime("%b %d, %H:%M"))
-        painter.drawText(self._end_rect.left()+8, self.bottom() + 2 + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, datetime.fromtimestamp(self.end_time).strftime("%b %d, %H:%M"))
+        painter.drawText(self._start_rect.left() - self.left_bubble.width() - bubble_x_offset-2, self.bottom() + bubble_y_offset + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, datetime.fromtimestamp(self.start_time).strftime("%b %d, %H:%M"))
+        painter.drawText(self._end_rect.right() + bubble_x_offset + 2, self.bottom() + bubble_y_offset + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, datetime.fromtimestamp(self.end_time).strftime("%b %d, %H:%M"))
     
 
         if self._last_start_time != self.start_time or self._last_end_time != self.end_time:
