@@ -28,9 +28,9 @@ Important functions:
   - Given a list of numerical data, this function will show a preview of that data inside of the time box.
 
 ### Sidebar Widget
-```
-Sidebar(header_height = 64, blurRadius = 24, parent = None)
 ```python
+Sidebar(header_height = 64)
+```
 A somewhat internally complicated class. Some important functions include:
 - `def addWidget(self, widget):`
 - `def collapse(self):`
