@@ -4,13 +4,14 @@ from PyQt6 import QtCore, QtGui
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 
-from styles import Styles 
+from styles import Styles
+from widgets.custom_widget import CustomWidget 
 
 
 
 class ThemedButton(QPushButton):
-    def __init__(self, text: str, callback: callable, parent: QWidget = None):
-        super(ThemedButton, self).__init__(text, parent, clicked=callback)
+    def __init__(self, text: str, clicked: callable = None):
+        super(ThemedButton, self).__init__(text, clicked=clicked)
 
         self.setFixedHeight(Styles.theme.button_height)
 

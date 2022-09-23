@@ -5,15 +5,16 @@ from PyQt6 import QtCore, QtGui
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 
-from styles import Styles 
+from styles import Styles
+from widgets.custom_widget import CustomWidget 
 
 
 
 class ThemedDropdown(QComboBox):
-    def __init__(self, items: list, callback: Callable[[str], Any] = None, parent: QWidget = None):
-        super(ThemedDropdown, self).__init__(parent)
+    def __init__(self, items: list, itemChanged: Callable[[str], Any] = None):
+        super(ThemedDropdown, self).__init__()
         self.items: List[str] = []
-        self.callback = callback
+        self.callback = itemChanged
 
         self.currentIndexChanged.connect(self.index_changed)
 

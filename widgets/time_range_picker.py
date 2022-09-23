@@ -10,6 +10,7 @@ from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
 
 from styles import Styles
+from widgets.custom_widget import CustomWidget
 
 
 
@@ -24,7 +25,7 @@ class TimeRangeChangedEvent(QEvent):
         self.end_time: datetime = datetime.fromtimestamp(end_time_seconds)
 
 # this widget has two sliders which collider with eachother and are dragged by the mouse. Used to select a time window.
-class TimeRangePicker(QWidget):
+class TimeRangePicker(CustomWidget):
     def __init__(self, height: int, min_time: datetime, max_time: datetime, valueChanged: Callable[[TimeRangeChangedEvent], Any] = None, start_time: datetime = None, end_time: datetime = None, push_behavior: bool = True):
         super().__init__()
 
@@ -60,7 +61,8 @@ class TimeRangePicker(QWidget):
         self.set_start_value(self.start_time)
         self.set_end_value(self.end_time)
 
-        
+        self._last_start_time = self.start_time
+        self._last_end_time = self.end_time
 
         self.valueChanged(TimeRangeChangedEvent(self.start_time, self.end_time))
 
@@ -111,6 +113,13 @@ class TimeRangePicker(QWidget):
         painter.drawText(self._start_rect.right() - self.left_bubble.width()-8, self.bottom() + 2 + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, datetime.fromtimestamp(self.start_time).strftime("%b %d, %H:%M"))
         painter.drawText(self._end_rect.left()+8, self.bottom() + 2 + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, datetime.fromtimestamp(self.end_time).strftime("%b %d, %H:%M"))
     
+
+        if self._last_start_time != self.start_time or self._last_end_time != self.end_time:
+            self._last_start_time = self.start_time
+            self._last_end_time = self.end_time
+            self.valueChanged(TimeRangeChangedEvent(self.start_time, self.end_time))
+
+
     def value_to_y(self, value:float, max_value:float, min_value:float) -> int:
         return int(self.height() * (1 - (value - min_value) / (max_value - min_value))) + self.top()
 
@@ -143,8 +152,6 @@ class TimeRangePicker(QWidget):
                 counter = 0
 
         self.update()   
-
-
 
     def set_start_value(self, seconds_since_epoch: int):
         self.start_time = seconds_since_epoch
@@ -209,11 +216,11 @@ class TimeRangePicker(QWidget):
 
         if self._dragging_start:
             self.move_start_by_pixels(self._mouse_x_delta)
-            self.valueChanged(TimeRangeChangedEvent(self.start_time, self.end_time))
         
         if self._dragging_end:
             self.move_end_by_pixels(self._mouse_x_delta)
-            self.valueChanged(TimeRangeChangedEvent(self.start_time, self.end_time))
+            
+        # valueChanged is called from repaint, since thats the only time it matters
 
         self.update()
         
@@ -230,34 +237,3 @@ class TimeRangePicker(QWidget):
         if len(self.display_data) > 0:
             self.set_plot_data(self.display_data)
         QWidget.resizeEvent(self, event)
-
-
-
-
-    def width(self) -> int:
-        return super().width() - self.contentsMargins().left() - self.contentsMargins().right()
-
-    def height(self) -> int:
-        return super().height() - self.contentsMargins().top() - self.contentsMargins().bottom()
-
-    def left(self) -> int:
-        return self.contentsMargins().left()
-    
-    def right(self) -> int:
-        return self.width() + self.contentsMargins().left()
-
-    def right_margin(self) -> int:
-        return self.contentsMargins().right()
-    
-    def top(self) -> int:
-        return self.contentsMargins().top()
-
-    def bottom(self) -> int:
-        return self.height() + self.contentsMargins().top()
-    
-    def bottom_margin(self) -> int:
-        return self.contentsMargins().bottom()
-
-
-
-    

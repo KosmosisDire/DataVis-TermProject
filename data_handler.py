@@ -1,7 +1,9 @@
 import datetime
+import math
 import sqlite3
 from typing import List, Tuple
 import pandas as pd
+import numpy as np
 """
 Example data:
 Datetime (UTC),Timezone (minutes),Unix Timestamp (UTC),Acc magnitude avg,Eda avg,Temp avg,Movement intensity,Steps count,Rest,On Wrist
@@ -12,6 +14,8 @@ class DataHandler:
     database: sqlite3.Connection = sqlite3.connect("data.db")
     database.row_factory = lambda c, row: row[0]
     cursor: sqlite3.Cursor = database.cursor()
+
+    time_interval = math.inf
     
     def clear_table():
         try:
@@ -39,9 +43,30 @@ class DataHandler:
         DataHandler.cursor.execute(f"SELECT \"{column_name}\" FROM data")
         return DataHandler.cursor.fetchall()
 
+    def get_np(start_timestamp: int, end_timestamp: int, column_name: str) -> np.ndarray:
+        DataHandler.database.row_factory = None
+        df = pd.read_sql_query(f"SELECT \"{column_name}\" FROM data WHERE \"Unix Timestamp (UTC)\" BETWEEN {start_timestamp * 1000} AND {end_timestamp * 1000}", DataHandler.database)
+        DataHandler.database.row_factory = lambda c, row: row[0]
+        return df.to_numpy()
+
+    def get_all_np(column_name: str) -> np.ndarray:
+        DataHandler.database.row_factory = None
+        df = pd.read_sql_query(f"SELECT \"{column_name}\" FROM data", DataHandler.database)
+        DataHandler.database.row_factory = lambda c, row: row[0]
+        return df.to_numpy()
+
     def get_time_range() -> Tuple[int, int]:
         DataHandler.cursor.execute("SELECT MIN(\"Unix Timestamp (UTC)\") FROM data")
         start = DataHandler.cursor.fetchone()
         DataHandler.cursor.execute("SELECT MAX(\"Unix Timestamp (UTC)\") FROM data")
         end = DataHandler.cursor.fetchone()
         return (start // 1000, end // 1000)
+
+    def get_time_interval() -> int:
+        if DataHandler.time_interval == math.inf:
+            DataHandler.cursor.execute("SELECT \"Unix Timestamp (UTC)\" FROM data")
+            timestamps = DataHandler.cursor.fetchmany(2)
+            DataHandler.time_interval = (timestamps[1] - timestamps[0]) // 1000
+        
+        return DataHandler.time_interval
+

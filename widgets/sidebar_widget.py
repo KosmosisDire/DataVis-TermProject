@@ -7,11 +7,14 @@ from PyQt6.QtCore import *
 import math
 
 from styles import Styles
+from widgets.custom_widget import CustomWidget
+from widgets.horizontal_group import HorizontalGroup
+from widgets.vertical_group import VerticalGroup
 
 # Custom collapsable sidebar widget. Uses paintEvent to draw rounded corners, and a callback for the collapse/expand animation.
-class Sidebar(QWidget):
-    def __init__(self, header_height = 64, blurRadius = 24, parent=None):
-        super(Sidebar, self).__init__(parent)
+class Sidebar(VerticalGroup):
+    def __init__(self, header_height = 64, blurRadius = 24):
+        super().__init__()
         self._collapsed = False
         self._widthAnimation = QPropertyAnimation(self, b"maximumWidth", self)
         self._widthAnimation.setDuration(250)
@@ -19,26 +22,25 @@ class Sidebar(QWidget):
         self._widthAnimation.setStartValue(Styles.theme.min_sidebar_width)
         self._widthAnimation.setEndValue(40)
 
+        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
+
         self.header_height = header_height
 
         self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=blurRadius, xOffset=4, yOffset=0, color=QColor(0, 0, 0, 100)))
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.layout().setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        header_frame = QFrame()
+        header_frame = super().addWidget(HorizontalGroup())
         header_frame.setFixedHeight(self.header_height)
+        header_frame.layout().setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        header_layout = QHBoxLayout()
-        header_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
-        header_frame.setLayout(header_layout)
+        self.main_container = super().addWidget(VerticalGroup())
+        self.main_container.layout().setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.toggle_button = QPushButton("", clicked=self.toggle)
         self.toggle_button.resize(23, header_height)
         self.toggle_button.setIcon(QIcon("assets/collapse.png"))
-        self.toggle_button.setIconSize(QSize(21, header_height))
+        self.toggle_button.setIconSize(QSize(18, header_height))
         self.toggle_button.setStyleSheet(f"""
         QPushButton 
         {{ 
@@ -55,26 +57,19 @@ class Sidebar(QWidget):
             valueChanged=self.on_button_animate
         )
 
-        header_layout.addWidget(self.toggle_button)
-
-        layout.addWidget(header_frame)
-
-        # create main container for the sidebar
-        self.main_container = QWidget()
-        layout.addWidget(self.main_container)
-
-        super().setLayout(layout)
+        header_frame.addWidget(self.toggle_button)
 
         self.expand()
 
-    def addWidget(self, widget):
-        self.main_container.layout().addWidget(widget)
+    def addWidget(self, widget: QWidget) -> QWidget:
+        self.main_container.addWidget(widget)
+        return widget
 
-    def setLayout(self, a0: QLayout):
-        self.main_container.setLayout(a0)
-
-    def getLayout(self):
+    def getLayout(self) ->QLayout:
         return self.main_container.layout()
+
+    def set_container_layout(self, layout: QLayout):
+        self.main_container.setLayout(layout)
 
     @QtCore.pyqtSlot(QtCore.QVariant)
     def on_button_animate(self, value):
@@ -104,7 +99,7 @@ class Sidebar(QWidget):
         self._widthAnimation.start()
         self._button_animation.setDirection(QPropertyAnimation.Direction.Forward)
         self._button_animation.start()
-        self.main_container.setVisible(False)
+        self._button_animation.finished.connect(lambda : (self.main_container.setVisible(False) if self._collapsed else None))
 
     def expand(self):
         self._widthAnimation.setDirection(QPropertyAnimation.Direction.Backward)

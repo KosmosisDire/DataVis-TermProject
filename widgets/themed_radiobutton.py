@@ -4,14 +4,20 @@ from PyQt6 import QtCore, QtGui
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 
-from styles import Styles 
+from styles import Styles
+from widgets.custom_widget import CustomWidget 
 
 
 
 class ThemedRadioButton(QRadioButton):
-    def __init__(self, callback: Callable[[bool], Any]):
+    def __init__(self, stateChanged: Callable[[bool], Any]):
         super().__init__("")
         self.setStyleSheet(f"""
+            QRadioButton
+            {{
+                background-color: transparent;
+            }}
+
             QRadioButton::indicator {{
                 width: {Styles.theme.button_height}px;
                 height: {Styles.theme.button_height}px;
@@ -24,7 +30,7 @@ class ThemedRadioButton(QRadioButton):
             }}
         """)
 
-        callback(self.isChecked())
+        stateChanged(self.isChecked())
 
-        if callback:
-            self.clicked.connect(callback)
+        if stateChanged:
+            self.clicked.connect(stateChanged)

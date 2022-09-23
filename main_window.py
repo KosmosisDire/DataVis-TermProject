@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from time import sleep, time
 from typing import Any, Callable
+from joblib import Parallel, delayed
 
 from PyQt6.QtGui import QResizeEvent
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
@@ -11,13 +12,15 @@ from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
                              QRadioButton, QSlider, QSpinBox, QTimeEdit,
                              QVBoxLayout, QWidget, QScrollArea)
 from global_settings import GlobalSettings
+import pyqtgraph as pg
+from pyqtgraph import PlotWidget, plot
 
 from styles import Styles
 from data_handler import DataHandler
-from widgets.blank_widget import BlankWidget
+from widgets.blank_widget import Panel
 from widgets.colored_text import ColoredText
-from widgets.horizontal_group import HorizonalGroup
-from widgets.labeled_control import LabeledWidget
+from widgets.horizontal_group import HorizontalGroup
+from widgets.labeled_widget import LabeledWidget
 from widgets.seperator import HorizontalSeperator
 from widgets.sidebar_widget import Sidebar
 from widgets.themed_button import ThemedButton
@@ -26,23 +29,10 @@ from widgets.themed_radiobutton import ThemedRadioButton
 from widgets.themed_scroll_area import ThemedScrollArea
 from widgets.time_range_picker import TimeRangePicker
 from widgets.themed_plot import ThemedPlot
+from widgets.vertical_group import VerticalGroup
 
 
-class ProjectWindow(QMainWindow):
-    def __init__(self):
-         super().__init__()
-         self.resizeCallacks: list[Callable[[QResizeEvent]], Any] = []
-
-    def resizeEvent(self, event: QResizeEvent):
-        for callback in self.resizeCallacks:
-            callback(event)
-        QMainWindow.resizeEvent(self, event)
-
-    def register_resize_callback(self, callback: Callable[[QResizeEvent], Any]):
-        self.resizeCallacks.append(callback)
-
-
-class MainWindow(ProjectWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         
@@ -50,60 +40,82 @@ class MainWindow(ProjectWindow):
         self.setMinimumSize(int(1920/2), int(1080/2))
         self.resize(1280, 720)
 
-        background = BlankWidget(Styles.theme.light_background_color)
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        self.scroll_area: ThemedScrollArea = None
+        self.time_picker: TimeRangePicker = None
+        self.sidebar: Sidebar = None
+        self.base: HorizontalGroup = None
+        self.graphs: list[ThemedPlot] = []
+        
 
-        sidebar = Sidebar()
-        self.populate_sidebar(sidebar)
-        layout.addWidget(sidebar)
+        self.create_UI()
 
-        right_area = BlankWidget()
-        right_area.setLayout(QVBoxLayout())
-        layout.addWidget(right_area)
 
-        graph_header = BlankWidget()
-        graph_header.setLayout(QVBoxLayout())
-        right_area.addWidget(graph_header)
+    def create_UI(self):
+        self.base = HorizontalGroup()
+        self.setStyleSheet(f"background-color: {Styles.theme.light_background_color_hex};")
+        self.sidebar = self.base.addWidget(self.create_sidebar())
+        right_area = self.base.addWidget(VerticalGroup())
+        graph_header = right_area.addWidget(VerticalGroup())
 
         time_range = DataHandler.get_time_range()
-        print(time_range)
-        time_picker = TimeRangePicker(75, datetime.fromtimestamp(time_range[0]), datetime.fromtimestamp(time_range[1]), GlobalSettings.time_range_changed_callback)
-        time_picker.set_plot_data(DataHandler.get_all("Temp avg"))
-        graph_header.layout().addWidget(time_picker)
+        self.time_picker = TimeRangePicker(75, datetime.fromtimestamp(time_range[0]), datetime.fromtimestamp(time_range[1]), GlobalSettings.time_range_changed_callback)
+        self.time_picker.set_plot_data(DataHandler.get_all("Rest"))
+        graph_header.addWidget(self.time_picker)
 
-        scroll_area = ThemedScrollArea()
-        scroll_area.setLayout(QVBoxLayout(), Styles.theme.close_spacing, (Styles.theme.close_spacing, Styles.theme.close_spacing, Styles.theme.close_spacing, Styles.theme.close_spacing))
-        right_area.addWidget(scroll_area)
+        self.scroll_area: ThemedScrollArea = right_area.addWidget(ThemedScrollArea())
+        self.scroll_area.verticalScrollBar().valueChanged.connect(GlobalSettings.instance.time_range_changed.emit) #update the graphs when scrolling
 
+        self.create_graphs()
+
+        self.scroll_area.addWidgets(self.graphs)
+
+        self.setCentralWidget(self.base)
+
+    def create_graphs(self):
         graph1 = ThemedPlot("Temperature", "Temp avg")
+        graph2 = ThemedPlot("Movement Intensity", "Movement intensity")
+        graph3 = ThemedPlot("Rest", "Rest")
+        graph4 = ThemedPlot("Activity", "Acc magnitude avg")
+        graph5 = ThemedPlot("Temperature", "Temp avg")
+        graph6 = ThemedPlot("Movement Intensity", "Movement intensity")
+        graph7 = ThemedPlot("Rest", "Rest")
+        graph8 = ThemedPlot("Activity", "Acc magnitude avg")
+        graph9 = ThemedPlot("Temperature", "Temp avg")
+        graph10 = ThemedPlot("Movement Intensity", "Movement intensity")
+        graph11 = ThemedPlot("Rest", "Rest")
+        graph12 = ThemedPlot("Activity", "Acc magnitude avg")
 
-        scroll_area.addWidget(graph1)
+        self.graphs = [graph1, graph2, graph3, graph4, graph5, graph6, graph7, graph8, graph9, graph10, graph11, graph12]
 
-        background.setLayout(layout)
-        self.setCentralWidget(background)
-        self.register_resize_callback(sidebar.on_resize)
-
-    def populate_sidebar(self, sidebar: Sidebar):
+    def create_sidebar(self) -> Sidebar:
 
         #File heading
-        sidebar.setLayout(QVBoxLayout())
+        sidebar = Sidebar()
         sidebar.getLayout().setSpacing(Styles.theme.close_spacing)
 
         sidebar.addWidget(ColoredText("File: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
         file_widgets = [ThemedButton("Import Data", DataHandler.open_import_window), ThemedButton("Clear Data", DataHandler.clear_table)]
-        sidebar.addWidget(HorizonalGroup(file_widgets, Styles.theme.medium_spacing))
+        sidebar.addWidget(HorizontalGroup(file_widgets, Styles.theme.medium_spacing))
         
         sidebar.addWidget(HorizontalSeperator(Styles.theme.medium_spacing))
 
         # View heading
         sidebar.addWidget(ColoredText("View: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
-        interval_dropdown = ThemedDropdown(["30 Seconds", "1 Minute", "5 Minutes", "30 Minutes", "1 Hour", "6 Hours", "12 Hours", "1 Day"], GlobalSettings.aggregation_changed_callback)
+        moving_avg_dropdown = ThemedDropdown(["None", "1 Minute","2 Minutes","4 Minutes","5 Minutes","10 Minutes","15 Minutes","30 Minutes","1 Hour"], GlobalSettings.moving_average_seconds_changed_callback)
+        sidebar.addWidget(LabeledWidget("Moving Average:", moving_avg_dropdown))
+        interval_dropdown = ThemedDropdown(["30 Seconds","1 Minute","2 Minutes","4 Minutes","5 Minutes","10 Minutes","15 Minutes","30 Minutes","1 Hour"], GlobalSettings.aggregation_changed_callback)
+        interval_dropdown.setCurrentIndex(4)
         sidebar.addWidget(LabeledWidget("Time Interval:", interval_dropdown))
         sidebar.addWidget(LabeledWidget("Local Time:", ThemedRadioButton(GlobalSettings.local_time_changed_callback)))
-
+        sidebar.addWidget(LabeledWidget("Angle Filter:", ThemedRadioButton(GlobalSettings.use_angle_aggregation_changed_callback)))
         sidebar.addWidget(HorizontalSeperator(Styles.theme.medium_spacing))
+
+        return sidebar
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.sidebar.on_resize(event)
+        QMainWindow.resizeEvent(self, event)
 
         
 

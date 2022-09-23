@@ -38,7 +38,7 @@ class Styles:
         self.huge_spacing: int = 128
 
         self.button_height: int = 24
-        self.min_sidebar_width: int = 285
+        self.min_sidebar_width: int = 350
 
         self.slider_handle_width = 7
         self.micro_rounding_radius = 5

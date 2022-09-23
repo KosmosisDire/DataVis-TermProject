@@ -4,12 +4,13 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from styles import Styles
 
-from widgets.blank_widget import BlankWidget
+from widgets.blank_widget import Panel
+from widgets.custom_widget import CustomWidget
 
 # adds a seperator line with space on either side
-class HorizontalSeperator(QWidget):
+class HorizontalSeperator(CustomWidget):
     def __init__(self, spacing: int, thickness: int = 1):
-        super().__init__(None)
+        super().__init__()
         self.setFixedHeight(spacing)
         self.thickness = thickness
 
