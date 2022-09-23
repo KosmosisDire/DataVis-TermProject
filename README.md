@@ -1,6 +1,7 @@
 # Data Vis Term Project
 
-![image](https://user-images.githubusercontent.com/39423700/191661025-f3f41ee0-13b5-4251-84f8-ed5e5d34c135.png)
+![image](https://user-images.githubusercontent.com/39423700/192062305-b4223a4f-156d-44e7-8732-79ba7ce60b66.png)
+
 
 
 ## Libraries Needed
