@@ -4,7 +4,8 @@ import PyQt6
 
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui import * 
-from PyQt6.QtCore import * 
+from PyQt6.QtCore import *
+from colorama import Style 
 
 from data_handler import DataHandler
 from plot_handler import PlotHandler
@@ -62,6 +63,7 @@ class MainWindow(QMainWindow):
     def wheelEvent(self, a0: QWheelEvent):
         if self.ctrl_down:
             self.plot_height += 5 * a0.angleDelta().y() / 120
+            self.plot_height = max(Styles.theme.medium_spacing * 2, self.plot_height)
             PlotHandler.set_plot_height(int(self.plot_height))
 
     def create_UI(self):
@@ -117,9 +119,11 @@ class MainWindow(QMainWindow):
 
         graphs = [graph1, graph2, graph3, graph4, graph5, graph6, graph7, graph8, graph9, graph10, graph11, graph12]
         self.scroll_area.addWidgets(graphs)
-
+        
+        PlotHandler.set_plot_height(self.plot_height)
         PlotHandler.add_plots(graphs)
         PlotHandler.set_time_range(DataHandler.get_time_range())
+        
 
     def create_sidebar(self) -> Sidebar:
         #File heading
@@ -143,6 +147,8 @@ class MainWindow(QMainWindow):
         sidebar.addWidget(LabeledWidget("Time Interval:", interval_dropdown))
         #sidebar.addWidget(LabeledWidget("Local Time:", ThemedRadioButton(GlobalSettings.local_time_changed_callback)))
         sidebar.addWidget(HorizontalSeperator(Styles.theme.medium_spacing))
+        sidebar.addWidget(ColoredText("Controls: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
+        sidebar.addWidget(ColoredText("Hold Ctrl and Scroll to zoom in/out", Styles.theme.label_color, Styles.theme.label_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
 
         return sidebar
 

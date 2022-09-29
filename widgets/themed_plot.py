@@ -62,7 +62,7 @@ class ThemedPlot(CustomWidget):
         self.max_value: float = 0
         self.min_value: float = 0
 
-        self.setContentsMargins(Styles.theme.large_spacing, Styles.theme.close_spacing, Styles.theme.close_spacing, Styles.theme.medium_spacing)
+        self.setContentsMargins(Styles.theme.large_spacing, Styles.theme.close_spacing, Styles.theme.medium_spacing, Styles.theme.medium_spacing)
 
         self.set_height(height)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
