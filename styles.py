@@ -50,6 +50,8 @@ class Styles:
 
         self.slider_handle_width = 7
 
+        self.font_family: str = "Segoe UI"
+
         
 
         Styles.theme = self

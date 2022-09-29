@@ -19,10 +19,10 @@ class PlotHandler:
     moving_average = 1
     aggregation_interval = 1
 
-    max_horizontal_marker_count = 10
-    max_vertical_marker_count = 5
-    horizonatal_marker_interval = 10000
-    vertical_marker_interval = 1
+    max_horizontal_marker_count = 15
+    max_vertical_marker_count = 10
+    horizonatal_marker_interval = 5000
+    vertical_marker_interval = 0.5
 
     def add_plot(plot: ThemedPlot):
         PlotHandler.plots.append(plot)

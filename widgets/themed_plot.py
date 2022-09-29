@@ -1,3 +1,4 @@
+import datetime
 from functools import partial
 import math
 import random
@@ -56,6 +57,7 @@ class ThemedPlot(CustomWidget):
         self.final_timestamps: List[int] = []
 
         self.painter_path: QPainterPath = None
+        self.number_path: QPainterPath = None
 
         self.color = random.choice(Styles.theme.data_colors_hex)
 
@@ -69,7 +71,7 @@ class ThemedPlot(CustomWidget):
 
         self.max_horizontal_marker_count = max_horizontal_marker_count
         self.max_vertical_marker_count = max_vertical_marker_count
-        self.horizonatal_marker_interval = horizonatal_marker_interval
+        self.horizontal_marker_interval = horizonatal_marker_interval
         self.vertical_marker_interval = vertical_marker_interval
 
         self.vertical_markers: List[str] = []
@@ -199,6 +201,35 @@ class ThemedPlot(CustomWidget):
 
         #self.painter_path = self.painter_path.simplified()
 
+        self.generate_markers()
+
+    def generate_markers(self):
+        def round_down_to_nearest(x: float, a: float):
+            return math.floor(x / a) * a
+
+        self.number_path = QPainterPath()
+
+        normal_range_y = self.max_value - self.min_value
+        normal_range_x = self.time_range[1] - self.time_range[0]
+
+        num_y_markers = min(int(normal_range_y / self.vertical_marker_interval), self.max_vertical_marker_count) + 1
+        num_x_markers = min(int(normal_range_x / self.horizontal_marker_interval), self.max_horizontal_marker_count) + 1
+
+        last_number = math.inf
+        for i in range(0, self.max_vertical_marker_count):
+            value = round_down_to_nearest(self.min_value + normal_range_y * (i / self.max_vertical_marker_count), self.vertical_marker_interval)
+            if value == last_number: continue
+            self.number_path.addText(-28, self.bottom() - (i/self.max_vertical_marker_count) * self.height(), QFont(Styles.theme.font_family, 8), f"{value:>6.2g}")
+            last_number = value
+        
+        last_number = math.inf
+        for i in range(0, self.max_horizontal_marker_count):
+            value = round_down_to_nearest(self.time_range[0] + normal_range_x * (i / self.max_horizontal_marker_count), self.horizontal_marker_interval)
+            if value == last_number: continue
+            self.number_path.addText((i/self.max_horizontal_marker_count) * self.width(), self.bottom() + 11, QFont(Styles.theme.font_family, 8), datetime.datetime.fromtimestamp(value).strftime("%H:%M:%S"))
+            last_number = value
+        
+
         self.update()
 
     def paintEvent(self, event: QPaintEvent):
@@ -233,6 +264,12 @@ class ThemedPlot(CustomWidget):
 
         painter.translate(self.left(), 0)
         painter.drawPath(self.painter_path.translated(-self.left(), 0))
+
+        # paint markers
+        painter.setClipping(False)
+        painter.setPen(QPen(QColor("transparent")))
+        painter.setBrush(QBrush(Styles.theme.label_color))
+        painter.drawPath(self.number_path)
 
         end = time.perf_counter_ns()
 
