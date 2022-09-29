@@ -11,7 +11,7 @@ class Program(QApplication):
     def __init__(self):
         super().__init__(sys.argv)
 
-        DataHandler.import_data_from_csv("data\\20200118\\312\\summary.csv")
+        DataHandler.import_data_from_csv("data\\20200119\\312\\summary.csv")
 
         self.window = MainWindow()
         self.window.show()

@@ -1,44 +1,61 @@
+from functools import partial
 import math
 import random
-from time import time
+import time
 from typing import List, Tuple
-from venv import create
 from PyQt6.QtWidgets import * 
-from PyQt6 import QtCore, QtGui
+from PyQt6 import *
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 from data_handler import DataHandler
-from global_settings import GlobalSettings
-import datetime, pytz
+import asyncio
 
 from styles import Styles
 from widgets.custom_widget import CustomWidget
-from widgets.time_range_picker import TimeRangeChangedEvent
+
+import numpy as np
+
+from widgets.time_range_picker import clamp
+
+def binarySearch(data, val):
+    lo, hi = 0, len(data) - 1
+    best_ind = lo
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        if data[mid] < val:
+            lo = mid + 1
+        elif data[mid] > val:
+            hi = mid - 1
+        else:
+            best_ind = mid
+            break
+        # check if data[mid] is closer to val than data[best_ind] 
+        if abs(data[mid] - val) < abs(data[best_ind] - val):
+            best_ind = mid
+    return best_ind
 
 
 class ThemedPlot(CustomWidget):
-    def __init__(self, title: str, column_name: str, height: int = 100, max_horizontal_marker_count = 10, max_vertical_marker_count = 5, horizonatal_marker_interval = 10000, vertical_marker_interval = 1):
+    def __init__(self, height: int = 80, max_horizontal_marker_count = 10, max_vertical_marker_count = 5, horizonatal_marker_interval = 10000, vertical_marker_interval = 1):
         super().__init__()
-        self.title = title
-        self.column_name = column_name
+
+        self.time_range: Tuple[int, int] = (0, 0)
 
         self.data: List[float] = []
         self.timestamps: List[int] = []
+
+        self.moving_avg = 1
+        self.moving_avg_data = []
+        self.moving_avg_timestamps = []
+
+        self.aggregation_interval = 1
+        self.aggregated_data = []
+        self.aggregated_timestamps = []
 
         self.final_data: List[float] = []
         self.final_timestamps: List[int] = []
 
         self.painter_path: QPainterPath = None
-
-        GlobalSettings.instance.time_range_changed.connect(self.create_plot_path)
-        GlobalSettings.instance.aggregation_changed.connect(self.regenerate_plot)
-        GlobalSettings.instance.moving_average_seconds_changed.connect(self.regenerate_plot)
-        GlobalSettings.instance.local_time_changed.connect(self.update)
-        GlobalSettings.instance.use_angle_aggregation_changed.connect(self.regenerate_plot)
-
-        self.time_range_last = GlobalSettings.time_range
-        self.aggregation_last = GlobalSettings.aggregation_seconds
-        self.local_time_last = GlobalSettings.local_time
 
         self.color = random.choice(Styles.theme.data_colors_hex)
 
@@ -47,7 +64,7 @@ class ThemedPlot(CustomWidget):
 
         self.setContentsMargins(Styles.theme.large_spacing, Styles.theme.close_spacing, Styles.theme.close_spacing, Styles.theme.medium_spacing)
 
-        self.setFixedHeight(height + self.top() + self.bottom_margin())
+        self.set_height(height)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
 
         self.max_horizontal_marker_count = max_horizontal_marker_count
@@ -58,137 +75,130 @@ class ThemedPlot(CustomWidget):
         self.vertical_markers: List[str] = []
         self.horizontal_markers: List[str] = []
 
-        self.update_data()
-
-    def update_data(self):
-        time_range = DataHandler.get_time_range() 
-        self.data = DataHandler.get(*time_range, self.column_name)
-        self.timestamps = DataHandler.get(*time_range, "Unix Timestamp (UTC)")
-        self.timestamps = [timestamp // 1000 for timestamp in self.timestamps]
-        self.regenerate_plot()
-
-    def regenerate_plot(self):
-        if(len(self.data) == 0):
-            self.update()
-            return
+    def plot(self, X: List[float], Y: List[float]):
+        self.data = Y
+        self.timestamps = X
 
         if(self.min_value == 0 and self.max_value == 0):
             self.max_value = max(self.data)
             self.min_value = min(self.data)
+
+        self.set_moving_average(self.moving_avg)
+
+    def plot(self, Y: List[float]):
+        self.data = Y
+        self.timestamps = DataHandler.get_timestamps()
+
+        if(self.min_value == 0 and self.max_value == 0):
+            self.max_value = max(self.data)
+            self.min_value = min(self.data)
+
+    def set_moving_average(self, window_seconds: int):
+        self.moving_avg = window_seconds
+        if len(self.data) == 0: return
+
+        if (self.moving_avg < DataHandler.get_time_interval()):
+            self.moving_avg_data = self.data
+            self.moving_avg_timestamps = self.timestamps
+            self.set_aggregation_interval(self.aggregation_interval)
+            return
+
+        self.moving_avg_data: List[float] = []
+        self.moving_avg_timestamps = self.timestamps
+
+        window_size = int(self.moving_avg / DataHandler.get_time_interval()) + 1
+
+        npdata: np.ndarray = np.array(self.data)
+        npdatalen = npdata.shape[0]
         
-        moving_avg_pass_data = []
-        moving_avg_pass_timestamps = []
+        y_sum: float = npdata[0]
+        count = 0
+        for i in range(1, npdatalen):
+            y_sum += npdata[i]
+            
+            if i >= window_size:
+                y_sum -= npdata[i - window_size]
+                count = window_size
+            else:
+                count += 1
 
-        if (GlobalSettings.moving_average_seconds > DataHandler.get_time_interval()):
-            y_avg: int = self.data[0]
-            avg_num = GlobalSettings.moving_average_seconds / DataHandler.get_time_interval()
-            for i in range(1, len(self.data)):
-                timestamp: int = self.timestamps[i]
-                value: float = self.data[i]
+            self.moving_avg_data.append(y_sum / count)
 
-                y_avg = 0
-                c = 0
-                for j in range(math.floor(-avg_num/2), math.ceil(avg_num/2)):
-                    if(i+j >= 0 and i+j < len(self.data)):
-                        y_avg += self.data[i+j]
-                        c += 1
-                y_avg /= c
+        self.set_aggregation_interval(self.aggregation_interval)
 
-                moving_avg_pass_data.append(y_avg)
-                moving_avg_pass_timestamps.append(timestamp)
-        else:
-            moving_avg_pass_data = self.data
-            moving_avg_pass_timestamps = self.timestamps
-        
-        aggregation_pass_data = []
-        aggregation_pass_timestamps = []
+    def set_aggregation_interval(self, interval_seconds: int):
+        self.aggregation_interval = max(interval_seconds, 1)
 
-        y_avg: int = 0
+        if len(self.moving_avg_data) == 0: return
+
+        self.final_data = []
+        self.final_timestamps = []
+
+        self.max_value = self.moving_avg_data[0]
+        self.min_value = self.moving_avg_data[-1]
+
+        y_avg: float = 0
         x_avg: int = 0
         counter: float = 0.0
-        for i in range(0, len(moving_avg_pass_data)):
-            timestamp: int = moving_avg_pass_timestamps[i]
-            value: float = moving_avg_pass_data[i]
+        data_len = len(self.moving_avg_data)
+        for i in range(0, data_len):
+            timestamp: int = self.moving_avg_timestamps[i]
+            value: float = self.moving_avg_data[i]
 
             x_avg += timestamp
             y_avg += value
 
+            if not self.is_timestamp_out_of_range(timestamp):
+                self.max_value = max(self.max_value, value)
+                self.min_value = min(self.min_value, value)
+
             counter += 1.0
-            if timestamp % GlobalSettings.aggregation_seconds <= DataHandler.get_time_interval():
+            if timestamp % self.aggregation_interval <= DataHandler.get_time_interval():
                 y_avg /= counter
                 x_avg /= counter
-                aggregation_pass_data.append(y_avg)
-                aggregation_pass_timestamps.append(x_avg)
+                self.final_data.append(y_avg)
+                self.final_timestamps.append(x_avg)
                 y_avg = 0
                 x_avg = 0
                 counter = 0.0
 
-        if not GlobalSettings.use_angle_aggregation:
-            self.final_data = aggregation_pass_data
-            self.final_timestamps = aggregation_pass_timestamps
-            self.create_plot_path()
-            return
-
-        self.final_data = []
-        self.final_timestamps = []
+        self.render_plot()
+    
+    def render_plot(self):
+        if len(self.final_data) == 0: return
+        if not self.is_on_screen(): return
         
-        # initialize first line
-        last_point = (aggregation_pass_timestamps[0], aggregation_pass_data[0])
-        this_point = (aggregation_pass_timestamps[1], aggregation_pass_data[1])
-        last_slope = float(this_point[1] - last_point[1]) / (float(this_point[0] - last_point[0]) / 10000.0)
-        self.final_data.append(last_point[1])
-        self.final_timestamps.append(last_point[0])
-        self.final_data.append(this_point[1])
-        self.final_timestamps.append(this_point[0])
-        last_point = this_point
+        start = time.perf_counter_ns()
+        
+        start_range_estimation = max(binarySearch(self.final_timestamps, self.time_range[0]) - 1, 0)
+        end_range_estimation = min(binarySearch(self.final_timestamps, self.time_range[1]) + 1, len(self.final_timestamps)-1)
 
-        # process the rest of the data
-        data_len = len(aggregation_pass_data)
-        for i in range(2, data_len):
-
-            value = aggregation_pass_data[i]
-            timestamp = aggregation_pass_timestamps[i]
-
-            slope = float(value - last_point[1]) / (float(timestamp - last_point[0]) / 10000.0)
-            angle = abs(math.degrees(math.atan((slope - last_slope) / (1 + slope * last_slope))))
-            last_slope = slope
-            
-            if angle < 5 and i != data_len-1:
-                continue
-            
-            self.final_timestamps.append(last_point[0])
-            self.final_data.append(last_point[1])
-
-            last_point = (float(timestamp), float(value))
-
-        self.create_plot_path()
-
-    def create_plot_path(self):
-        if(GlobalSettings.isVisibleWidget(self) == False):
-            return
+        initial_pos = QPointF(self.timestamp_to_x(self.final_timestamps[start_range_estimation]), self.value_to_y(self.final_data[start_range_estimation], self.max_value, self.min_value))
+        start_range_estimation += 1
 
         self.painter_path = QPainterPath()
-        self.painter_path.moveTo(self.timestamp_to_x(self.final_timestamps[0]), self.value_to_y(self.final_data[0], self.max_value, self.min_value))
+        self.painter_path.moveTo(initial_pos + QPointF(0, self.height()))
+        self.painter_path.lineTo(initial_pos)
+        
+        max_val_local = self.final_data[start_range_estimation]
+        min_val_local = self.final_data[start_range_estimation]
 
-        max_val_local = self.final_data[0]
-        min_val_local = self.final_data[0]
-        for i in range(1, len(self.final_data)):
+        for i in range(start_range_estimation, end_range_estimation):
             timestamp: int = self.timestamp_to_x(self.final_timestamps[i])
             value: float = self.value_to_y(self.final_data[i], self.max_value, self.min_value)
-
-            if self.is_timestamp_out_of_range(self.final_timestamps[i]):
-                self.painter_path.moveTo(timestamp, value)
-                continue
                 
             max_val_local = max(max_val_local, self.final_data[i] * 1.01)
             min_val_local = min(min_val_local, self.final_data[i] * 0.99)
-
             
             self.painter_path.lineTo(timestamp, value)
 
+        self.painter_path.lineTo(self.painter_path.currentPosition() + QPointF(0, self.height()))
+
         self.max_value = (self.max_value + max_val_local) / 2
         self.min_value = (self.min_value + min_val_local) / 2
-        
+
+        #self.painter_path = self.painter_path.simplified()
+
         self.update()
 
     def paintEvent(self, event: QPaintEvent):
@@ -196,6 +206,7 @@ class ThemedPlot(CustomWidget):
         if len(self.final_data) == 0 or not self.painter_path:
             return
 
+        start = time.perf_counter_ns()
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -215,26 +226,47 @@ class ThemedPlot(CustomWidget):
         painter.setPen(QPen(Styles.theme.mid_background_color.darker(150), 4))
         painter.drawRoundedRect(self.rect().adjusted(6, 6, -6, -6), Styles.theme.panel_radius, Styles.theme.panel_radius)
 
-
         # paint plot
         painter.setBrush(QBrush(QColor("transparent")))
         painter.setClipRect(self.rect())
         painter.setPen(QPen(QColor(self.color), 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 
-        painter.drawPath(self.painter_path)
+        painter.translate(self.left(), 0)
+        painter.drawPath(self.painter_path.translated(-self.left(), 0))
+
+        end = time.perf_counter_ns()
 
     def timestamp_to_x(self, timestamp: int) -> int:
-        return int(self.width() * (timestamp - GlobalSettings.time_range[0]) / max(GlobalSettings.time_range[1] - GlobalSettings.time_range[0], 0.001)) + self.left()
+        return int(self.width() * (timestamp - self.time_range[0]) / max(self.time_range[1] - self.time_range[0], 0.001)) + self.left() 
 
     def value_to_y(self, value:float, max_value:float, min_value:float) -> int:
         return int(self.height() * (1 - (value - min_value) / max(max_value - min_value, 0.001))) + self.top()
 
     def is_timestamp_out_of_range(self, timestamp: int) -> bool:
-        return timestamp - GlobalSettings.time_range[0] < -GlobalSettings.aggregation_seconds * 10 or timestamp - GlobalSettings.time_range[1] > GlobalSettings.aggregation_seconds * 10
+        return timestamp - self.time_range[0] < - self.aggregation_interval * 10 or timestamp - self.time_range[1] > self.aggregation_interval * 10
 
-    def resizeEvent(self, event: QResizeEvent):
-        if len(self.data) > 0:
-            self.create_plot_path()
-        QWidget.resizeEvent(self, event)
+    def erase(self):
+        self.data = []
+        self.moving_avg_data = []
+        self.moving_avg_timestamps = []
+        self.final_data = []
+        self.final_timestamps = []
+        self.painter_path = None
+        self.update()
+
+    def set_height(self, height: int):
+        self.setFixedHeight(height + self.top() + self.bottom_margin())
+        self.render_plot()
+
+    def set_markers(self, max_horizontal: int, max_vertical: int, horizontal_interval: int, vertical_interval: int):
+        self.max_horizontal_marker_count = max_horizontal
+        self.max_vertical_marker_count = max_vertical
+        self.horizontal_marker_interval = horizontal_interval
+        self.vertical_marker_interval = vertical_interval
+        self.render_plot()
+
+    def set_time_range(self, lower_utc_timestamp: int, upper_utc_timestamp: int):
+        self.time_range = (lower_utc_timestamp, upper_utc_timestamp)
+        self.render_plot()
 
         

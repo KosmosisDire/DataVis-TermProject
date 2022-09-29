@@ -1,11 +1,9 @@
 from typing import List
 from PyQt6.QtWidgets import * 
-from PyQt6 import QtCore, QtGui
+from PyQt6 import QtCore
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 
-from styles import Styles
-from widgets.custom_widget import CustomWidget
 from widgets.vertical_group import VerticalGroup 
 
 class ThemedScrollArea(QScrollArea):
@@ -20,6 +18,8 @@ class ThemedScrollArea(QScrollArea):
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setWidget(VerticalGroup())
         self.widgets: List[QWidget] = []
+
+        self.locked = False
 
     def addWidget(self, widget: QWidget):
         self.widget().layout().addWidget(widget)
@@ -40,3 +40,15 @@ class ThemedScrollArea(QScrollArea):
 
     def setContentsMargins(self, margins: tuple[int, int, int, int]):
         self.widget().layout().setContentsMargins(*margins)
+
+    def lock(self):
+        self.locked = True
+
+    def unlock(self):
+        self.locked = False
+
+    def wheelEvent(self, ev: QWheelEvent):
+        if self.locked:
+            ev.ignore()
+            return
+        super().wheelEvent(ev)

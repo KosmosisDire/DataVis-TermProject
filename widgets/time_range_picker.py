@@ -1,13 +1,9 @@
-from datetime import datetime, timedelta
-import math
-from time import time
-from typing import Any, Callable
+from datetime import datetime
+from typing import Any, Callable, Tuple
 from PyQt6.QtWidgets import * 
-from PyQt6 import QtCore, QtGui
+from PyQt6 import *
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import * 
-from pyqtgraph import PlotWidget, plot
-import pyqtgraph as pg
 
 from styles import Styles
 from widgets.custom_widget import CustomWidget
@@ -17,16 +13,9 @@ from widgets.custom_widget import CustomWidget
 def clamp(num, min_value, max_value):
    return max(min(num, max_value), min_value)
 
-class TimeRangeChangedEvent(QEvent):
-    def __init__(self, start_time_seconds, end_time_seconds):
-        self.start_time_seconds: int = start_time_seconds
-        self.end_time_seconds: int = end_time_seconds
-        self.start_time: datetime = datetime.fromtimestamp(start_time_seconds)
-        self.end_time: datetime = datetime.fromtimestamp(end_time_seconds)
-
 # this widget has two sliders which collider with eachother and are dragged by the mouse. Used to select a time window.
 class TimeRangePicker(CustomWidget):
-    def __init__(self, height: int, min_time: datetime, max_time: datetime, valueChanged: Callable[[TimeRangeChangedEvent], Any] = None, start_time: datetime = None, end_time: datetime = None, push_behavior: bool = True):
+    def __init__(self, height: int, min_time: datetime, max_time: datetime, valueChanged: Callable[[Tuple[int, int]], Any] = None, start_time: datetime = None, end_time: datetime = None, push_behavior: bool = True):
         super().__init__()
 
         self.right_bubble: QPixmap = QPixmap("assets/right_bubble.png")
@@ -38,9 +27,9 @@ class TimeRangePicker(CustomWidget):
 
         self.min_time: int = int(min_time.timestamp())
         self.max_time = int(max_time.timestamp())
-        self.valueChanged: Callable[[TimeRangeChangedEvent], Any] = valueChanged
-        self.start_time = int(start_time.timestamp()) if start_time else self.min_time
-        self.end_time = int(end_time.timestamp()) if end_time else self.max_time
+        self.valueChanged: Callable[[Tuple[int, int]], Any] = valueChanged
+        self.start_time:int = int(start_time.timestamp()) if start_time else self.min_time
+        self.end_time:int = int(end_time.timestamp()) if end_time else self.max_time
         self.push_behavior: bool = push_behavior
 
         self._start_rect: QRect = QRect(0, 0, 0, 0)
@@ -64,9 +53,9 @@ class TimeRangePicker(CustomWidget):
         self._last_start_time = self.start_time
         self._last_end_time = self.end_time
 
-        self.valueChanged(TimeRangeChangedEvent(self.start_time, self.end_time))
+        self.valueChanged((self.start_time, self.end_time))
 
-    def paintEvent(self, event: QtGui.QPaintEvent):
+    def paintEvent(self, event: QPaintEvent):
         self.set_start_value(self.start_time)
         self.set_end_value(self.end_time)
 
@@ -120,7 +109,7 @@ class TimeRangePicker(CustomWidget):
         if self._last_start_time != self.start_time or self._last_end_time != self.end_time:
             self._last_start_time = self.start_time
             self._last_end_time = self.end_time
-            self.valueChanged(TimeRangeChangedEvent(self.start_time, self.end_time))
+            self.valueChanged((self.start_time, self.end_time))
 
 
     def value_to_y(self, value:float, max_value:float, min_value:float) -> int:
@@ -135,7 +124,8 @@ class TimeRangePicker(CustomWidget):
         self.painter_path = QPainterPath()
         self.painter_path.moveTo(self.left(), self.value_to_y(self.display_data[0], max_value, min_value))
 
-        divisor = max(int(min(len(self.display_data), 1000) / self.width() * 7), 2)
+        # divisor = max(int(min(len(self.display_data), 1000) / self.width() * 4), 2)
+        divisor = 1
 
         y_avg: int = 0
         counter: int = 0
@@ -154,7 +144,7 @@ class TimeRangePicker(CustomWidget):
                 y_avg = 0
                 counter = 0
 
-        self.update()   
+        self.update()
 
     def set_start_value(self, seconds_since_epoch: int):
         self.start_time = seconds_since_epoch
@@ -194,7 +184,7 @@ class TimeRangePicker(CustomWidget):
 
 
 
-    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         if self._start_rect.contains(event.pos()):
             self._dragging_start = True
             self._dragging_end = False
@@ -210,7 +200,7 @@ class TimeRangePicker(CustomWidget):
 
         return super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
         if self._mouse_x_last == 0:
             self._mouse_x_last = event.globalPosition().x()
 
@@ -227,7 +217,7 @@ class TimeRangePicker(CustomWidget):
 
         self.update()
         
-    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         self._mouse_x_last = 0
         self._mouse_x_delta = 0
             

@@ -1,4 +1,3 @@
-from email import policy
 from typing import List
 from PyQt6.QtWidgets import * 
 from PyQt6 import QtCore, QtGui
@@ -15,10 +14,11 @@ class CustomWidget(QWidget):
 
 
     def width(self) -> int:
-        return super().width() - self.contentsMargins().left() - self.contentsMargins().right()
+        
+        return super().width() - self.left() - self.right_margin()
 
     def height(self) -> int:
-        return super().height() - self.contentsMargins().top() - self.contentsMargins().bottom()
+        return super().height() - self.top() - self.bottom_margin()
 
     def left(self) -> int:
         return self.contentsMargins().left()
@@ -76,3 +76,8 @@ class CustomWidget(QWidget):
         shadow.setOffset(xOffset, yOffset)
         shadow.setColor(color)
         self.setGraphicsEffect(shadow)
+
+    def is_on_screen(self):
+        if not self.visibleRegion().isEmpty():
+            return True
+        return False

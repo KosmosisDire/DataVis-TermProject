@@ -1,26 +1,22 @@
-from time import time
 from PyQt6.QtWidgets import * 
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import * 
 
-import math
-
 from styles import Styles
-from widgets.custom_widget import CustomWidget
 from widgets.horizontal_group import HorizontalGroup
 from widgets.vertical_group import VerticalGroup
 
 # Custom collapsable sidebar widget. Uses paintEvent to draw rounded corners, and a callback for the collapse/expand animation.
 class Sidebar(VerticalGroup):
-    def __init__(self, header_height = 64, blurRadius = 24):
+    def __init__(self, header_height = 64):
         super().__init__()
         self._collapsed = False
-        self._widthAnimation = QPropertyAnimation(self, b"maximumWidth", self)
-        self._widthAnimation.setDuration(250)
-        self._widthAnimation.setEasingCurve(QEasingCurve.Type.InOutCubic)
-        self._widthAnimation.setStartValue(Styles.theme.min_sidebar_width)
-        self._widthAnimation.setEndValue(header_height//2)
+        self.widthAnimation = QPropertyAnimation(self, b"maximumWidth", self)
+        self.widthAnimation.setDuration(250)
+        self.widthAnimation.setEasingCurve(QEasingCurve.Type.InOutCubic)
+        self.widthAnimation.setStartValue(Styles.theme.min_sidebar_width)
+        self.widthAnimation.setEndValue(header_height//2)
         
 
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
@@ -97,14 +93,14 @@ class Sidebar(VerticalGroup):
             self.toggle_button.setFixedSize(self.header_height//2 + Styles.theme.medium_spacing, self.header_height)
 
     def collapse(self):
-        self._widthAnimation.setDirection(QPropertyAnimation.Direction.Forward)
-        self._widthAnimation.start()
+        self.widthAnimation.setDirection(QPropertyAnimation.Direction.Forward)
+        self.widthAnimation.start()
         self._button_animation.setDirection(QPropertyAnimation.Direction.Forward)
         self._button_animation.start()
 
     def expand(self):
-        self._widthAnimation.setDirection(QPropertyAnimation.Direction.Backward)
-        self._widthAnimation.start()
+        self.widthAnimation.setDirection(QPropertyAnimation.Direction.Backward)
+        self.widthAnimation.start()
         self._button_animation.setDirection(QPropertyAnimation.Direction.Backward)
         self._button_animation.start()
         self.main_container.setVisible(True)
@@ -124,4 +120,4 @@ class Sidebar(VerticalGroup):
         if not self._collapsed:
             self.setMaximumWidth(value)
 
-        self._widthAnimation.setStartValue(value)
+        self.widthAnimation.setStartValue(value)

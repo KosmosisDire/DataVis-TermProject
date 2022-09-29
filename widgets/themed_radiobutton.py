@@ -5,7 +5,6 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
 from styles import Styles
-from widgets.custom_widget import CustomWidget 
 
 
 
