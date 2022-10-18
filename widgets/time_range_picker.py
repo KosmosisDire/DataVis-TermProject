@@ -177,6 +177,9 @@ class TimeRangePicker(CustomWidget):
 
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
+        if len(self.display_data) == 0:
+            return super().mousePressEvent(event)
+
         if self._start_rect.contains(event.pos()):
             self._dragging_start = True
             self._dragging_end = False

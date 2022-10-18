@@ -166,9 +166,3 @@ class MainWindow(QMainWindow):
         super().resizeEvent(event)
         self.sidebar.on_resize(event)
         QMainWindow.resizeEvent(self, event)
-
-        
-
-
-
-   
