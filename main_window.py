@@ -114,10 +114,9 @@ class MainWindow(QMainWindow):
         self.time_picker.set_time_range(DataHandler.get_time_range())
         self.time_picker.set_plot_data(DataHandler.get_all("Steps count"))
 
+        PlotHandler.set_time_range(DataHandler.get_time_range())
         for i, column in enumerate(self.graph_columns):
             PlotHandler.plots[i].plot(DataHandler.get_all(column))
-
-        PlotHandler.set_time_range(DataHandler.get_time_range())
 
     def create_sidebar(self) -> Sidebar:
         #File heading

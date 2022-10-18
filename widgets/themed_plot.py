@@ -95,6 +95,8 @@ class ThemedPlot(CustomWidget):
             self.max_value = max(self.data)
             self.min_value = min(self.data)
 
+        self.set_moving_average(self.moving_avg)
+
     def set_moving_average(self, window_seconds: int):
         self.moving_avg = window_seconds
         if len(self.data) == 0: return
