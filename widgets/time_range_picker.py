@@ -56,8 +56,7 @@ class TimeRangePicker(CustomWidget):
         self.valueChanged((self.start_time, self.end_time))
 
     def paintEvent(self, event: QPaintEvent):
-        self.set_start_value(self.start_time)
-        self.set_end_value(self.end_time)
+        self._update_handles()
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -146,18 +145,22 @@ class TimeRangePicker(CustomWidget):
 
         self.update()
 
+    def _update_handles(self):
+        x_pos = int((self.width()) * (self.start_time - self.min_time) / (self.max_time - self.min_time))
+        self._start_rect = QRect(x_pos + self.left() - self.handle_width, self.top(), self.handle_width, self.height())
+
+        x_pos = int((self.width()) * (self.end_time - self.min_time) / (self.max_time - self.min_time))
+        self._end_rect = QRect(x_pos + self.left(), self.top(), self.handle_width, self.height())
+
+        self._middle_rect = QRect(self._start_rect.right(), self.top(), self._end_rect.left() - self._start_rect.right(), self.height())
+
     def set_start_value(self, seconds_since_epoch: int):
         self.start_time = seconds_since_epoch
         self.start_time = int(clamp(self.start_time, self.min_time, self.max_time))
 
-        x_pos = int((self.width()) * (self.start_time - self.min_time) / (self.max_time - self.min_time))
-        self._start_rect = QRect(x_pos + self.left() - self.handle_width, self.top(), self.handle_width, self.height())
-
         if self.push_behavior:
             if self.start_time > self.end_time:
                 self.set_end_value(self.start_time)
-
-        self._middle_rect = QRect(self._start_rect.right(), self.top(), self._end_rect.left() - self._start_rect.right(), self.height())
 
         self.update()
 
@@ -165,14 +168,9 @@ class TimeRangePicker(CustomWidget):
         self.end_time = seconds_since_epoch
         self.end_time = int(clamp(self.end_time, self.min_time, self.max_time))
 
-        x_pos = int((self.width()) * (self.end_time - self.min_time) / (self.max_time - self.min_time))
-        self._end_rect = QRect(x_pos + self.left(), self.top(), self.handle_width, self.height())
-
         if self.push_behavior:
             if self.end_time < self.start_time:
                 self.set_start_value(self.end_time)
-
-        self._middle_rect = QRect(self._start_rect.right(), self.top(), self._end_rect.left() - self._start_rect.right(), self.height())
 
         self.update()
 
