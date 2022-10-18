@@ -235,10 +235,6 @@ class ThemedPlot(CustomWidget):
         self.update()
 
     def paintEvent(self, event: QPaintEvent):
-
-        if len(self.final_data) == 0 or not self.painter_path:
-            return
-
         start = time.perf_counter_ns()
 
         painter = QPainter(self)
@@ -258,6 +254,9 @@ class ThemedPlot(CustomWidget):
 
         painter.setPen(QPen(Styles.theme.mid_background_color.darker(150), 4))
         painter.drawRoundedRect(self.rect().adjusted(6, 6, -6, -6), Styles.theme.panel_radius, Styles.theme.panel_radius)
+
+        if len(self.final_data) == 0 or not self.painter_path:
+            return
 
         # paint plot
         painter.setBrush(QBrush(QColor("transparent")))
