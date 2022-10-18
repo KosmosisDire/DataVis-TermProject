@@ -32,6 +32,15 @@ import pyqtgraph as pg
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.graph_columns = [
+            "Rest",
+            "Steps count",
+            "Movement intensity",
+            "Temp avg",
+            "Eda avg",
+            "Acc magnitude avg",
+        ]
         
         self.setWindowTitle("Data Visualizer")
         self.setMinimumSize(int(1920/2), int(1080/2))
@@ -95,37 +104,20 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(background)
 
     def create_graphs(self):
-        graph1 = ThemedPlot()
-        # graph1.plot(DataHandler.get_all("Rest"))
-        graph2 = ThemedPlot()
-        # graph2.plot(DataHandler.get_all("Steps count"))
-        graph3 = ThemedPlot()
-        # graph3.plot(DataHandler.get_all("Movement intensity"))
-        graph4 = ThemedPlot()
-        # graph4.plot(DataHandler.get_all("Temp avg"))
-        graph5 = ThemedPlot()
-        # graph5.plot(DataHandler.get_all("Eda avg"))
-        graph6 = ThemedPlot()
-        # graph6.plot(DataHandler.get_all("Acc magnitude avg"))
-        graph7 = ThemedPlot()
-        # graph7.plot(DataHandler.get_all("Rest"))
-        graph8 = ThemedPlot()
-        # graph8.plot(DataHandler.get_all("Steps count"))
-        graph9 = ThemedPlot()
-        # graph9.plot(DataHandler.get_all("Movement intensity"))
-        graph10 = ThemedPlot()
-        # graph10.plot(DataHandler.get_all("Temp avg"))
-        graph11 = ThemedPlot()
-        # graph11.plot(DataHandler.get_all("Eda avg"))
-        graph12 = ThemedPlot()
-        # graph12.plot(DataHandler.get_all("Acc magnitude avg"))
-
-        graphs = [graph1, graph2, graph3, graph4, graph5, graph6, graph7, graph8, graph9, graph10, graph11, graph12]
-        self.scroll_area.addWidgets(graphs)
-        
         PlotHandler.set_plot_height(self.plot_height)
-        PlotHandler.add_plots(graphs)
-        
+        for i in range(len(self.graph_columns)):
+            graph = ThemedPlot()
+            PlotHandler.add_plot(graph)
+            self.scroll_area.addWidget(graph)
+
+    def populate_graphs(self):
+        self.time_picker.set_time_range(DataHandler.get_time_range())
+        self.time_picker.set_plot_data(DataHandler.get_all("Steps count"))
+
+        for i, column in enumerate(self.graph_columns):
+            PlotHandler.plots[i].plot(DataHandler.get_all(column))
+
+        PlotHandler.set_time_range(DataHandler.get_time_range())
 
     def create_sidebar(self) -> Sidebar:
         #File heading
@@ -158,6 +150,7 @@ class MainWindow(QMainWindow):
         if self.file_dialog.exec():
             files = self.file_dialog.selectedFiles()
             DataHandler.import_data_from_csv(files[0])
+            self.populate_graphs()
 
     def clear_data(self):
         DataHandler.clear_table()
