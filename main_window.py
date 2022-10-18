@@ -3,6 +3,7 @@ from datetime import datetime
 import PyQt6
 
 from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 from colorama import Style 
@@ -40,6 +41,10 @@ class MainWindow(QMainWindow):
         self.time_picker: TimeRangePicker = None
         self.sidebar: Sidebar = None
         self.base: HorizontalGroup = None
+
+        self.file_dialog = QFileDialog()
+        self.file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        self.file_dialog.setNameFilter("csv (*.csv)")
 
         self.plot_height = 120
         self.ctrl_down = False
@@ -132,7 +137,7 @@ class MainWindow(QMainWindow):
         sidebar.getLayout().setSpacing(Styles.theme.close_spacing)
 
         sidebar.addWidget(ColoredText("File: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
-        file_widgets = [ThemedButton("Import Data", DataHandler.open_import_window), ThemedButton("Clear Data", DataHandler.clear_table)]
+        file_widgets = [ThemedButton("Import Data", self.import_data), ThemedButton("Clear Data", self.clear_data)]
         sidebar.addWidget(HorizontalGroup(file_widgets, Styles.theme.medium_spacing))
         
         sidebar.addWidget(HorizontalSeperator(Styles.theme.medium_spacing))
@@ -151,6 +156,14 @@ class MainWindow(QMainWindow):
         sidebar.addWidget(ColoredText("Hold Ctrl and Scroll to zoom in/out", Styles.theme.label_color, Styles.theme.label_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
 
         return sidebar
+
+    def import_data(self):
+        if self.file_dialog.exec():
+            files = self.file_dialog.selectedFiles()
+            DataHandler.import_data_from_csv(files[0])
+
+    def clear_data(self):
+        DataHandler.clear_table()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
