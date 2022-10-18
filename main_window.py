@@ -83,9 +83,7 @@ class MainWindow(QMainWindow):
         graph_header: Panel = right_area.addWidget(Panel(Styles.theme.light_background_color_hex))
         graph_header.setShadow(xOffset=4)
 
-        time_range = DataHandler.get_time_range()
-        self.time_picker = TimeRangePicker(75, datetime.fromtimestamp(time_range[0]), datetime.fromtimestamp(time_range[1]), PlotHandler.set_time_range)
-        self.time_picker.set_plot_data(DataHandler.get_all("Steps count"))
+        self.time_picker = TimeRangePicker(75, PlotHandler.set_time_range)
         graph_header.addWidget(self.time_picker)
 
         self.scroll_area: ThemedScrollArea = right_area.addWidget(ThemedScrollArea())
@@ -98,36 +96,35 @@ class MainWindow(QMainWindow):
 
     def create_graphs(self):
         graph1 = ThemedPlot()
-        graph1.plot(DataHandler.get_all("Rest"))
+        # graph1.plot(DataHandler.get_all("Rest"))
         graph2 = ThemedPlot()
-        graph2.plot(DataHandler.get_all("Steps count"))
+        # graph2.plot(DataHandler.get_all("Steps count"))
         graph3 = ThemedPlot()
-        graph3.plot(DataHandler.get_all("Movement intensity"))
+        # graph3.plot(DataHandler.get_all("Movement intensity"))
         graph4 = ThemedPlot()
-        graph4.plot(DataHandler.get_all("Temp avg"))
+        # graph4.plot(DataHandler.get_all("Temp avg"))
         graph5 = ThemedPlot()
-        graph5.plot(DataHandler.get_all("Eda avg"))
+        # graph5.plot(DataHandler.get_all("Eda avg"))
         graph6 = ThemedPlot()
-        graph6.plot(DataHandler.get_all("Acc magnitude avg"))
+        # graph6.plot(DataHandler.get_all("Acc magnitude avg"))
         graph7 = ThemedPlot()
-        graph7.plot(DataHandler.get_all("Rest"))
+        # graph7.plot(DataHandler.get_all("Rest"))
         graph8 = ThemedPlot()
-        graph8.plot(DataHandler.get_all("Steps count"))
+        # graph8.plot(DataHandler.get_all("Steps count"))
         graph9 = ThemedPlot()
-        graph9.plot(DataHandler.get_all("Movement intensity"))
+        # graph9.plot(DataHandler.get_all("Movement intensity"))
         graph10 = ThemedPlot()
-        graph10.plot(DataHandler.get_all("Temp avg"))
+        # graph10.plot(DataHandler.get_all("Temp avg"))
         graph11 = ThemedPlot()
-        graph11.plot(DataHandler.get_all("Eda avg"))
+        # graph11.plot(DataHandler.get_all("Eda avg"))
         graph12 = ThemedPlot()
-        graph12.plot(DataHandler.get_all("Acc magnitude avg"))
+        # graph12.plot(DataHandler.get_all("Acc magnitude avg"))
 
         graphs = [graph1, graph2, graph3, graph4, graph5, graph6, graph7, graph8, graph9, graph10, graph11, graph12]
         self.scroll_area.addWidgets(graphs)
         
         PlotHandler.set_plot_height(self.plot_height)
         PlotHandler.add_plots(graphs)
-        PlotHandler.set_time_range(DataHandler.get_time_range())
         
 
     def create_sidebar(self) -> Sidebar:
