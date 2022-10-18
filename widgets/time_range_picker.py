@@ -104,6 +104,10 @@ class TimeRangePicker(CustomWidget):
             self._last_end_time = self.end_time
             self.valueChanged((self.start_time, self.end_time))
 
+    def clear_data(self):
+        self.display_data = []
+        self.update()
+
     def set_time_range(self, range: Tuple[int, int]):
         self.min_time = range[0]
         self.max_time = range[1]

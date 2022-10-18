@@ -153,6 +153,9 @@ class MainWindow(QMainWindow):
 
     def clear_data(self):
         DataHandler.clear_table()
+        PlotHandler.erase_plots()
+        self.time_picker.clear_data()
+
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
