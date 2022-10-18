@@ -3,6 +3,7 @@ from datetime import datetime
 import PyQt6
 
 from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 from colorama import Style 
@@ -31,6 +32,15 @@ import pyqtgraph as pg
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.graph_columns = [
+            "Rest",
+            "Steps count",
+            "Movement intensity",
+            "Temp avg",
+            "Eda avg",
+            "Acc magnitude avg",
+        ]
         
         self.setWindowTitle("Data Visualizer")
         self.setMinimumSize(int(1920/2), int(1080/2))
@@ -40,6 +50,10 @@ class MainWindow(QMainWindow):
         self.time_picker: TimeRangePicker = None
         self.sidebar: Sidebar = None
         self.base: HorizontalGroup = None
+
+        self.file_dialog = QFileDialog()
+        self.file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        self.file_dialog.setNameFilter("csv (*.csv)")
 
         self.plot_height = 120
         self.ctrl_down = False
@@ -78,9 +92,7 @@ class MainWindow(QMainWindow):
         graph_header: Panel = right_area.addWidget(Panel(Styles.theme.light_background_color_hex))
         graph_header.setShadow(xOffset=4)
 
-        time_range = DataHandler.get_time_range()
-        self.time_picker = TimeRangePicker(75, datetime.fromtimestamp(time_range[0]), datetime.fromtimestamp(time_range[1]), PlotHandler.set_time_range)
-        self.time_picker.set_plot_data(DataHandler.get_all("Steps count"))
+        self.time_picker = TimeRangePicker(75, PlotHandler.set_time_range)
         graph_header.addWidget(self.time_picker)
 
         self.scroll_area: ThemedScrollArea = right_area.addWidget(ThemedScrollArea())
@@ -92,38 +104,19 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(background)
 
     def create_graphs(self):
-        graph1 = ThemedPlot()
-        graph1.plot(DataHandler.get_all("Rest"))
-        graph2 = ThemedPlot()
-        graph2.plot(DataHandler.get_all("Steps count"))
-        graph3 = ThemedPlot()
-        graph3.plot(DataHandler.get_all("Movement intensity"))
-        graph4 = ThemedPlot()
-        graph4.plot(DataHandler.get_all("Temp avg"))
-        graph5 = ThemedPlot()
-        graph5.plot(DataHandler.get_all("Eda avg"))
-        graph6 = ThemedPlot()
-        graph6.plot(DataHandler.get_all("Acc magnitude avg"))
-        graph7 = ThemedPlot()
-        graph7.plot(DataHandler.get_all("Rest"))
-        graph8 = ThemedPlot()
-        graph8.plot(DataHandler.get_all("Steps count"))
-        graph9 = ThemedPlot()
-        graph9.plot(DataHandler.get_all("Movement intensity"))
-        graph10 = ThemedPlot()
-        graph10.plot(DataHandler.get_all("Temp avg"))
-        graph11 = ThemedPlot()
-        graph11.plot(DataHandler.get_all("Eda avg"))
-        graph12 = ThemedPlot()
-        graph12.plot(DataHandler.get_all("Acc magnitude avg"))
-
-        graphs = [graph1, graph2, graph3, graph4, graph5, graph6, graph7, graph8, graph9, graph10, graph11, graph12]
-        self.scroll_area.addWidgets(graphs)
-        
         PlotHandler.set_plot_height(self.plot_height)
-        PlotHandler.add_plots(graphs)
+        for i in range(len(self.graph_columns)):
+            graph = ThemedPlot()
+            PlotHandler.add_plot(graph)
+            self.scroll_area.addWidget(graph)
+
+    def populate_graphs(self):
+        self.time_picker.set_time_range(DataHandler.get_time_range())
+        self.time_picker.set_plot_data(DataHandler.get_all("Steps count"))
+
         PlotHandler.set_time_range(DataHandler.get_time_range())
-        
+        for i, column in enumerate(self.graph_columns):
+            PlotHandler.plots[i].plot(DataHandler.get_all(column))
 
     def create_sidebar(self) -> Sidebar:
         #File heading
@@ -132,7 +125,7 @@ class MainWindow(QMainWindow):
         sidebar.getLayout().setSpacing(Styles.theme.close_spacing)
 
         sidebar.addWidget(ColoredText("File: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
-        file_widgets = [ThemedButton("Import Data", DataHandler.open_import_window), ThemedButton("Clear Data", DataHandler.clear_table)]
+        file_widgets = [ThemedButton("Import Data", self.import_data), ThemedButton("Clear Data", self.clear_data)]
         sidebar.addWidget(HorizontalGroup(file_widgets, Styles.theme.medium_spacing))
         
         sidebar.addWidget(HorizontalSeperator(Styles.theme.medium_spacing))
@@ -152,13 +145,19 @@ class MainWindow(QMainWindow):
 
         return sidebar
 
+    def import_data(self):
+        if self.file_dialog.exec():
+            files = self.file_dialog.selectedFiles()
+            DataHandler.import_data_from_csv(files[0])
+            self.populate_graphs()
+
+    def clear_data(self):
+        DataHandler.clear_table()
+        PlotHandler.erase_plots()
+        self.time_picker.clear_data()
+
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.sidebar.on_resize(event)
         QMainWindow.resizeEvent(self, event)
-
-        
-
-
-
-   

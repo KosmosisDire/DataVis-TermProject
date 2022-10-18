@@ -32,9 +32,6 @@ class DataHandler:
         df = pd.read_csv(path)
         df.to_sql("data", DataHandler.database, if_exists="append", index=False)
 
-    def open_import_window():
-        pass
-
     def get(start_timestamp: int, end_timestamp: int, column_name: str) -> List[float]:
         DataHandler.cursor.execute(f"SELECT \"{column_name}\" FROM data WHERE \"Unix Timestamp (UTC)\" BETWEEN {start_timestamp * 1000} AND {end_timestamp * 1000}")
         return DataHandler.cursor.fetchall()

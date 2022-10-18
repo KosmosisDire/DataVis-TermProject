@@ -95,6 +95,8 @@ class ThemedPlot(CustomWidget):
             self.max_value = max(self.data)
             self.min_value = min(self.data)
 
+        self.set_moving_average(self.moving_avg)
+
     def set_moving_average(self, window_seconds: int):
         self.moving_avg = window_seconds
         if len(self.data) == 0: return
@@ -233,10 +235,6 @@ class ThemedPlot(CustomWidget):
         self.update()
 
     def paintEvent(self, event: QPaintEvent):
-
-        if len(self.final_data) == 0 or not self.painter_path:
-            return
-
         start = time.perf_counter_ns()
 
         painter = QPainter(self)
@@ -256,6 +254,9 @@ class ThemedPlot(CustomWidget):
 
         painter.setPen(QPen(Styles.theme.mid_background_color.darker(150), 4))
         painter.drawRoundedRect(self.rect().adjusted(6, 6, -6, -6), Styles.theme.panel_radius, Styles.theme.panel_radius)
+
+        if len(self.final_data) == 0 or not self.painter_path:
+            return
 
         # paint plot
         painter.setBrush(QBrush(QColor("transparent")))

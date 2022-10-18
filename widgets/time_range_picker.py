@@ -15,7 +15,7 @@ def clamp(num, min_value, max_value):
 
 # this widget has two sliders which collider with eachother and are dragged by the mouse. Used to select a time window.
 class TimeRangePicker(CustomWidget):
-    def __init__(self, height: int, min_time: datetime, max_time: datetime, valueChanged: Callable[[Tuple[int, int]], Any] = None, start_time: datetime = None, end_time: datetime = None, push_behavior: bool = True):
+    def __init__(self, height: int, valueChanged: Callable[[Tuple[int, int]], Any] = None, push_behavior: bool = True):
         super().__init__()
 
         self.right_bubble: QPixmap = QPixmap("assets/right_bubble.png")
@@ -25,11 +25,11 @@ class TimeRangePicker(CustomWidget):
         self.setMinimumWidth(640)
         self.setFixedHeight(height + self.top() + self.contentsMargins().bottom())
 
-        self.min_time: int = int(min_time.timestamp())
-        self.max_time = int(max_time.timestamp())
+        self.min_time: int = 0
+        self.max_time: int = 1
         self.valueChanged: Callable[[Tuple[int, int]], Any] = valueChanged
-        self.start_time:int = int(start_time.timestamp()) if start_time else self.min_time
-        self.end_time:int = int(end_time.timestamp()) if end_time else self.max_time
+        self.start_time: int = self.min_time
+        self.end_time: int = self.max_time
         self.push_behavior: bool = push_behavior
 
         self._start_rect: QRect = QRect(0, 0, 0, 0)
@@ -47,17 +47,11 @@ class TimeRangePicker(CustomWidget):
         self.display_data: list = []
         self.painter_path: QPainterPath = QPainterPath()
 
-        self.set_start_value(self.start_time)
-        self.set_end_value(self.end_time)
-
         self._last_start_time = self.start_time
         self._last_end_time = self.end_time
 
-        self.valueChanged((self.start_time, self.end_time))
-
     def paintEvent(self, event: QPaintEvent):
-        self.set_start_value(self.start_time)
-        self.set_end_value(self.end_time)
+        self._update_handles()
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -68,10 +62,23 @@ class TimeRangePicker(CustomWidget):
         draw_rect = QRect(self.left(), self.top(), self.width(), self.height())
         painter.drawRoundedRect(draw_rect, Styles.theme.control_radius, Styles.theme.control_radius, Qt.SizeMode.AbsoluteSize)
 
-        #draw data path
-        painter.setBrush(QBrush(QColor("transparent")))
-        painter.setPen(QPen(QColor("white"), 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
-        painter.drawPath(self.painter_path) 
+        if len(self.display_data) > 0:
+            #draw data path
+            painter.setBrush(QBrush(QColor("transparent")))
+            painter.setPen(QPen(QColor("white"), 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+            painter.drawPath(self.painter_path) 
+
+            # draw time label bubbles
+            bubble_x_offset = 5
+            bubble_y_offset = -21
+            painter.drawPixmap(self._start_rect.left() - self.left_bubble.width() + bubble_x_offset, self.bottom() + bubble_y_offset, self.left_bubble)
+            painter.drawPixmap(self._end_rect.right() - bubble_x_offset, self.bottom() + bubble_y_offset, self.right_bubble)
+
+            # draw time labels
+            painter.setPen(QPen(Styles.theme.label_color, 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+            painter.setFont(QFont("Segoe UI", 8))
+            painter.drawText(self._start_rect.left() - self.left_bubble.width() - bubble_x_offset-2, self.bottom() + bubble_y_offset + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, datetime.fromtimestamp(self.start_time).strftime("%b %d, %H:%M"))
+            painter.drawText(self._end_rect.right() + bubble_x_offset + 2, self.bottom() + bubble_y_offset + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, datetime.fromtimestamp(self.end_time).strftime("%b %d, %H:%M"))
 
         #draw shroud
         painter.setBrush(QBrush(Styles.theme.shroud_color))
@@ -92,25 +99,21 @@ class TimeRangePicker(CustomWidget):
         painter.drawRect(QRectF(self._start_rect.x() + self._start_rect.width() - self.handle_radius, self.top(), self.handle_radius, self._start_rect.height())) 
         painter.drawRect(QRectF(self._end_rect.x(), self.top(), self.handle_radius, self._end_rect.height()))
 
-        # draw time label bubbles
-        bubble_x_offset = 5
-        bubble_y_offset = -21
-
-        painter.drawPixmap(self._start_rect.left() - self.left_bubble.width() + bubble_x_offset, self.bottom() + bubble_y_offset, self.left_bubble)
-        painter.drawPixmap(self._end_rect.right() - bubble_x_offset, self.bottom() + bubble_y_offset, self.right_bubble)
-
-        # draw time labels
-        painter.setPen(QPen(Styles.theme.label_color, 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
-        painter.setFont(QFont("Segoe UI", 8))
-        painter.drawText(self._start_rect.left() - self.left_bubble.width() - bubble_x_offset-2, self.bottom() + bubble_y_offset + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, datetime.fromtimestamp(self.start_time).strftime("%b %d, %H:%M"))
-        painter.drawText(self._end_rect.right() + bubble_x_offset + 2, self.bottom() + bubble_y_offset + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, datetime.fromtimestamp(self.end_time).strftime("%b %d, %H:%M"))
-    
-
         if self._last_start_time != self.start_time or self._last_end_time != self.end_time:
             self._last_start_time = self.start_time
             self._last_end_time = self.end_time
             self.valueChanged((self.start_time, self.end_time))
 
+    def clear_data(self):
+        self.display_data = []
+        self.update()
+
+    def set_time_range(self, range: Tuple[int, int]):
+        self.min_time = range[0]
+        self.max_time = range[1]
+        self.start_time = self.min_time
+        self.end_time = self.max_time
+        self.update()
 
     def value_to_y(self, value:float, max_value:float, min_value:float) -> int:
         return int(self.height() * (1 - (value - min_value) / (max_value - min_value))) + self.top()
@@ -146,18 +149,22 @@ class TimeRangePicker(CustomWidget):
 
         self.update()
 
+    def _update_handles(self):
+        x_pos = int((self.width()) * (self.start_time - self.min_time) / (self.max_time - self.min_time))
+        self._start_rect = QRect(x_pos + self.left() - self.handle_width, self.top(), self.handle_width, self.height())
+
+        x_pos = int((self.width()) * (self.end_time - self.min_time) / (self.max_time - self.min_time))
+        self._end_rect = QRect(x_pos + self.left(), self.top(), self.handle_width, self.height())
+
+        self._middle_rect = QRect(self._start_rect.right(), self.top(), self._end_rect.left() - self._start_rect.right(), self.height())
+
     def set_start_value(self, seconds_since_epoch: int):
         self.start_time = seconds_since_epoch
         self.start_time = int(clamp(self.start_time, self.min_time, self.max_time))
 
-        x_pos = int((self.width()) * (self.start_time - self.min_time) / (self.max_time - self.min_time))
-        self._start_rect = QRect(x_pos + self.left() - self.handle_width, self.top(), self.handle_width, self.height())
-
         if self.push_behavior:
             if self.start_time > self.end_time:
                 self.set_end_value(self.start_time)
-
-        self._middle_rect = QRect(self._start_rect.right(), self.top(), self._end_rect.left() - self._start_rect.right(), self.height())
 
         self.update()
 
@@ -165,14 +172,9 @@ class TimeRangePicker(CustomWidget):
         self.end_time = seconds_since_epoch
         self.end_time = int(clamp(self.end_time, self.min_time, self.max_time))
 
-        x_pos = int((self.width()) * (self.end_time - self.min_time) / (self.max_time - self.min_time))
-        self._end_rect = QRect(x_pos + self.left(), self.top(), self.handle_width, self.height())
-
         if self.push_behavior:
             if self.end_time < self.start_time:
                 self.set_start_value(self.end_time)
-
-        self._middle_rect = QRect(self._start_rect.right(), self.top(), self._end_rect.left() - self._start_rect.right(), self.height())
 
         self.update()
 
@@ -185,6 +187,9 @@ class TimeRangePicker(CustomWidget):
 
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
+        if len(self.display_data) == 0:
+            return super().mousePressEvent(event)
+
         if self._start_rect.contains(event.pos()):
             self._dragging_start = True
             self._dragging_end = False
