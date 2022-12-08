@@ -132,16 +132,26 @@ class MainWindow(QMainWindow):
 
         # View heading
         sidebar.addWidget(ColoredText("View: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
+        
+        # add moving average interal dropdown
         moving_avg_dropdown = ThemedDropdown({"None" : 0, "2 Minutes" : 120,"4 Minutes" : 240, "8 Minutes" : 480,"16 Minutes" : 960,"32 Minutes" : 1920, "1 Hour": 3600, "4 Hours": 14400}, PlotHandler.set_moving_average)
         moving_avg_dropdown.setCurrentIndex(2)
         sidebar.addWidget(LabeledWidget("Moving Average:", moving_avg_dropdown))
+        
+        # add aggregation interval dropdown
         interval_dropdown = ThemedDropdown({"None" : 0, "2 Minutes" : 120,"4 Minutes" : 240, "8 Minutes" : 480,"16 Minutes" : 960,"32 Minutes" : 1920, "1 Hour": 3600}, PlotHandler.set_aggregation_interval)
         interval_dropdown.setCurrentIndex(3)
         sidebar.addWidget(LabeledWidget("Time Interval:", interval_dropdown))
-        #sidebar.addWidget(LabeledWidget("Local Time:", ThemedRadioButton(GlobalSettings.local_time_changed_callback)))
+
+        # add space
         sidebar.addWidget(HorizontalSeperator(Styles.theme.medium_spacing))
-        sidebar.addWidget(ColoredText("Controls: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
-        sidebar.addWidget(ColoredText("Hold Ctrl and Scroll to zoom in/out", Styles.theme.label_color, Styles.theme.label_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
+
+        # add local time checkbox
+        sidebar.addWidget(LabeledWidget("Local Time:", ThemedRadioButton(PlotHandler.convert_local_timezone, True)))
+        
+        # this shows some instruction for controls, but I am removing it for now.
+        # sidebar.addWidget(ColoredText("Controls: ", Styles.theme.header_text_color, Styles.theme.header_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
+        # sidebar.addWidget(ColoredText("Hold Ctrl and Scroll to zoom in/out", Styles.theme.label_color, Styles.theme.label_font_size, margins=(Styles.theme.medium_spacing//2,0,0,0)))
 
         return sidebar
 

@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 from functools import partial
 import math
 import random
@@ -37,7 +37,7 @@ def binarySearch(data, val):
 
 
 class ThemedPlot(CustomWidget):
-    def __init__(self, height: int = 80, max_horizontal_marker_count = 10, max_vertical_marker_count = 5, horizonatal_marker_interval = 10000, vertical_marker_interval = 1):
+    def __init__(self, height: int = 80, horizontal_label_count = 10, vertical_label_count = 5, vertical_label_interval = 1):
         super().__init__()
 
         self.time_range: Tuple[int, int] = (0, 0)
@@ -69,13 +69,14 @@ class ThemedPlot(CustomWidget):
         self.set_height(height)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
 
-        self.max_horizontal_marker_count = max_horizontal_marker_count
-        self.max_vertical_marker_count = max_vertical_marker_count
-        self.horizontal_marker_interval = horizonatal_marker_interval
-        self.vertical_marker_interval = vertical_marker_interval
+        self.horizontal_label_count = horizontal_label_count
+        self.vertical_label_count = vertical_label_count
+        self.vertical_label_interval = vertical_label_interval
 
-        self.vertical_markers: List[str] = []
-        self.horizontal_markers: List[str] = []
+        self.vertical_labels: List[str] = []
+        self.horizontal_labels: List[str] = []
+
+        self.convert_to_local_time = False
 
     def plot(self, X: List[float], Y: List[float]):
         self.data = Y
@@ -203,34 +204,33 @@ class ThemedPlot(CustomWidget):
 
         #self.painter_path = self.painter_path.simplified()
 
-        self.generate_markers()
+        self.generate_labels()
 
-    def generate_markers(self):
+    def generate_labels(self):
         def round_down_to_nearest(x: float, a: float):
             return math.floor(x / a) * a
 
         self.number_path = QPainterPath()
 
+        x_interval = (self.time_range[1] - self.time_range[0]) / self.horizontal_label_count
+
+        x_position = self.time_range[0];
+        while x_position < self.time_range[1] - x_interval / 2.0:
+            x_converted = self.timestamp_to_x(x_position)
+            datetime_x = datetime.fromtimestamp(x_position)
+            time_str = datetime_x.strftime("%H:%M")
+            self.number_path.addText(x_converted - 60, self.height() + 20, QFont(Styles.theme.font_family, 6), time_str)
+            self.number_path.addRect(x_converted - 65, self.height(), 1, 20)
+            x_position += x_interval
+
         normal_range_y = self.max_value - self.min_value
-        normal_range_x = self.time_range[1] - self.time_range[0]
-
-        num_y_markers = min(int(normal_range_y / self.vertical_marker_interval), self.max_vertical_marker_count) + 1
-        num_x_markers = min(int(normal_range_x / self.horizontal_marker_interval), self.max_horizontal_marker_count) + 1
 
         last_number = math.inf
-        for i in range(0, self.max_vertical_marker_count):
-            value = round_down_to_nearest(self.min_value + normal_range_y * (i / self.max_vertical_marker_count), self.vertical_marker_interval)
+        for i in range(0, self.vertical_label_count):
+            value = round_down_to_nearest(self.min_value + normal_range_y * (i / self.vertical_label_count), self.vertical_label_interval)
             if value == last_number: continue
-            self.number_path.addText(-28, self.bottom() - (i/self.max_vertical_marker_count) * self.height(), QFont(Styles.theme.font_family, 8), f"{value:>6.2g}")
+            self.number_path.addText(-28, self.bottom() - (i/self.vertical_label_count) * self.height(), QFont(Styles.theme.font_family, 6), f"{value:>6.2g}")
             last_number = value
-        
-        last_number = math.inf
-        for i in range(0, self.max_horizontal_marker_count):
-            value = round_down_to_nearest(self.time_range[0] + normal_range_x * (i / self.max_horizontal_marker_count), self.horizontal_marker_interval)
-            if value == last_number: continue
-            self.number_path.addText((i/self.max_horizontal_marker_count) * self.width(), self.bottom() + 11, QFont(Styles.theme.font_family, 8), datetime.datetime.fromtimestamp(value).strftime("%H:%M:%S"))
-            last_number = value
-        
 
         self.update()
 
@@ -296,11 +296,10 @@ class ThemedPlot(CustomWidget):
         self.setFixedHeight(height + self.top() + self.bottom_margin())
         self.render_plot()
 
-    def set_markers(self, max_horizontal: int, max_vertical: int, horizontal_interval: int, vertical_interval: int):
-        self.max_horizontal_marker_count = max_horizontal
-        self.max_vertical_marker_count = max_vertical
-        self.horizontal_marker_interval = horizontal_interval
-        self.vertical_marker_interval = vertical_interval
+    def set_labels(self, max_horizontal: int, max_vertical: int, vertical_interval: int):
+        self.horizontal_label_count = max_horizontal
+        self.vertical_label_count = max_vertical
+        self.vertical_label_interval = vertical_interval
         self.render_plot()
 
     def set_time_range(self, lower_utc_timestamp: int, upper_utc_timestamp: int):
