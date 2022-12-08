@@ -1,7 +1,4 @@
 .vscode/
 /data.db
-/__pycache__/
-/widgets/__pycache__/
-
 
 *.pyc
