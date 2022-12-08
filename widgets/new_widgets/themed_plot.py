@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from functools import partial
+from datetime import datetime
 import math
 import random
 import time
@@ -9,7 +8,6 @@ from PyQt6 import *
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 from data_handler import DataHandler
-import asyncio
 
 from styles import Styles
 from widgets.utility_widgets.custom_widget import CustomWidget

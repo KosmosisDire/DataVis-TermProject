@@ -1,9 +1,6 @@
 import string
-from PyQt6.QtWidgets import * 
-from PyQt6.QtGui import * 
-from PyQt6.QtCore import *
-
-from widgets.utility_widgets.custom_widget import CustomWidget 
+from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtWidgets import QLabel
 
 class ColoredText(QLabel):
     def __init__(self, text: string, color: QColor, fontSize: int = 24, margins = (0, 0, 0, 0)):

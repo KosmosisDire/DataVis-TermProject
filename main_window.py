@@ -1,12 +1,7 @@
-import asyncio
-from datetime import datetime
-import PyQt6
-
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
-from colorama import Style 
 
 from data_handler import DataHandler
 from plot_handler import PlotHandler
@@ -24,9 +19,6 @@ from widgets.themed_widgets.themed_radiobutton import ThemedRadioButton
 from widgets.themed_widgets.themed_scroll_area import ThemedScrollArea
 from widgets.new_widgets.time_range_picker import TimeRangePicker
 from widgets.utility_widgets.vertical_group import VerticalGroup
-
-from pyqtgraph import PlotWidget, plot
-import pyqtgraph as pg
 
 
 class MainWindow(QMainWindow):

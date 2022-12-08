@@ -1,8 +1,5 @@
 import math
-from PyQt6.QtWidgets import * 
-from PyQt6 import *
-from PyQt6.QtGui import * 
-from PyQt6.QtCore import *
+from PyQt6.QtWidgets import QWidget, QHBoxLayout
 
 from widgets.utility_widgets.custom_widget import CustomWidget
 

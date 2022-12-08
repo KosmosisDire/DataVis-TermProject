@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import * 
-from PyQt6.QtGui import * 
-from PyQt6.QtCore import *
 from styles import Styles
+from PyQt6.QtGui import QPainter, QPen, QBrush
+from PyQt6.QtGui import QPaintEvent
+from PyQt6.QtCore import Qt
 
 
 from widgets.utility_widgets.custom_widget import CustomWidget

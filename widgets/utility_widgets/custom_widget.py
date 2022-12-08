@@ -1,8 +1,9 @@
 from typing import List
-from PyQt6.QtWidgets import * 
 from PyQt6 import QtCore, QtGui
-from PyQt6.QtGui import * 
-from PyQt6.QtCore import *
+from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLayout
+from PyQt6.QtGui import QPalette
+from PyQt6.QtWidgets import QGraphicsDropShadowEffect
 
 from styles import Styles
 

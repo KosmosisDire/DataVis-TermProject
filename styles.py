@@ -1,9 +1,5 @@
 from __future__ import annotations
-from cProfile import label
-from PyQt6.QtGui import QPalette, QColor, QFont
-from PyQt6.QtWidgets import QGraphicsDropShadowEffect
-
-
+from PyQt6.QtGui import QColor
 
 class Styles:
     theme: Styles = None
