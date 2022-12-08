@@ -116,4 +116,4 @@ themes = {
     "Cool": blue_theme,
 }
 
-Styles.apply_theme(themes["Cool"])
+Styles.apply_theme(themes["Warm"])

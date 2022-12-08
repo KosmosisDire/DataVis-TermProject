@@ -217,8 +217,9 @@ class ThemedPlot(CustomWidget):
         x_position = self.time_range[0];
         while x_position < self.time_range[1] - x_interval / 2.0:
             x_converted = self.timestamp_to_x(x_position)
-            datetime_x = datetime.fromtimestamp(x_position)
+            datetime_x = datetime.utcfromtimestamp(x_position)
             time_str = datetime_x.strftime("%H:%M")
+
             self.number_path.addText(x_converted - 60, self.height() + 20, QFont(Styles.theme.font_family, 6), time_str)
             self.number_path.addRect(x_converted - 65, self.height(), 1, 20)
             x_position += x_interval
