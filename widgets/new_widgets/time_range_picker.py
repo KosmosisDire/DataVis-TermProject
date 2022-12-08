@@ -77,7 +77,7 @@ class TimeRangePicker(CustomWidget):
             # draw time labels
             painter.setPen(QPen(Styles.theme.label_color, 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
             painter.setFont(QFont("Segoe UI", 8))
-            painter.drawText(self._start_rect.left() - self.left_bubble.width() - bubble_x_offset-2, self.bottom() + bubble_y_offset + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, datetime.uctfromtimestamp(self.start_time).strftime("%b %d, %H:%M"))
+            painter.drawText(self._start_rect.left() - self.left_bubble.width() - bubble_x_offset-2, self.bottom() + bubble_y_offset + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, datetime.utcfromtimestamp(self.start_time).strftime("%b %d, %H:%M"))
             painter.drawText(self._end_rect.right() + bubble_x_offset + 2, self.bottom() + bubble_y_offset + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, datetime.utcfromtimestamp(self.end_time).strftime("%b %d, %H:%M"))
 
         #draw shroud
