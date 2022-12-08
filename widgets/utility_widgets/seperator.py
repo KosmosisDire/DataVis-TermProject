@@ -4,7 +4,7 @@ from PyQt6.QtCore import *
 from styles import Styles
 
 
-from widgets.custom_widget import CustomWidget
+from widgets.utility_widgets.custom_widget import CustomWidget
 
 # adds a seperator line with space on either side
 class HorizontalSeperator(CustomWidget):

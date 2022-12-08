@@ -5,8 +5,8 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from styles import Styles
 
-from widgets.colored_text import ColoredText
-from widgets.horizontal_group import HorizontalGroup
+from widgets.themed_widgets.colored_text import ColoredText
+from widgets.utility_widgets.horizontal_group import HorizontalGroup
 
 
 class LabeledWidget(HorizontalGroup):

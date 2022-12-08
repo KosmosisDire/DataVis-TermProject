@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 
-from widgets.custom_widget import CustomWidget 
+from widgets.utility_widgets.custom_widget import CustomWidget 
 
 class ColoredText(QLabel):
     def __init__(self, text: string, color: QColor, fontSize: int = 24, margins = (0, 0, 0, 0)):

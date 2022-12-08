@@ -11,19 +11,19 @@ from colorama import Style
 from data_handler import DataHandler
 from plot_handler import PlotHandler
 from styles import Styles
-from widgets.colored_text import ColoredText
-from widgets.horizontal_group import HorizontalGroup
-from widgets.labeled_widget import LabeledWidget
-from widgets.panel import Panel
-from widgets.seperator import HorizontalSeperator
-from widgets.sidebar import Sidebar
-from widgets.themed_button import ThemedButton
-from widgets.themed_dropdown import ThemedDropdown
-from widgets.themed_plot import ThemedPlot
-from widgets.themed_radiobutton import ThemedRadioButton
-from widgets.themed_scroll_area import ThemedScrollArea
-from widgets.time_range_picker import TimeRangePicker
-from widgets.vertical_group import VerticalGroup
+from widgets.themed_widgets.colored_text import ColoredText
+from widgets.utility_widgets.horizontal_group import HorizontalGroup
+from widgets.utility_widgets.labeled_widget import LabeledWidget
+from widgets.utility_widgets.panel import Panel
+from widgets.utility_widgets.seperator import HorizontalSeperator
+from widgets.new_widgets.sidebar import Sidebar
+from widgets.themed_widgets.themed_button import ThemedButton
+from widgets.themed_widgets.themed_dropdown import ThemedDropdown
+from widgets.new_widgets.themed_plot import ThemedPlot
+from widgets.themed_widgets.themed_radiobutton import ThemedRadioButton
+from widgets.themed_widgets.themed_scroll_area import ThemedScrollArea
+from widgets.new_widgets.time_range_picker import TimeRangePicker
+from widgets.utility_widgets.vertical_group import VerticalGroup
 
 from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
@@ -155,7 +155,6 @@ class MainWindow(QMainWindow):
         DataHandler.clear_table()
         PlotHandler.erase_plots()
         self.time_picker.clear_data()
-
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

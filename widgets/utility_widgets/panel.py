@@ -1,4 +1,4 @@
-from widgets.custom_widget import CustomWidget
+from widgets.utility_widgets.custom_widget import CustomWidget
 
 class Panel(CustomWidget):
     def __init__(self, color: str = "transparent"):

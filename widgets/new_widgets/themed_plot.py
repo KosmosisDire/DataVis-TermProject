@@ -12,11 +12,11 @@ from data_handler import DataHandler
 import asyncio
 
 from styles import Styles
-from widgets.custom_widget import CustomWidget
+from widgets.utility_widgets.custom_widget import CustomWidget
 
 import numpy as np
 
-from widgets.time_range_picker import clamp
+from widgets.new_widgets.time_range_picker import clamp
 
 def binarySearch(data, val):
     lo, hi = 0, len(data) - 1

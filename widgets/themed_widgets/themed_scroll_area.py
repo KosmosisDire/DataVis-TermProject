@@ -4,7 +4,7 @@ from PyQt6 import QtCore
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 
-from widgets.vertical_group import VerticalGroup 
+from widgets.utility_widgets.vertical_group import VerticalGroup 
 
 class ThemedScrollArea(QScrollArea):
     def __init__(self):

@@ -4,8 +4,8 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import * 
 
 from styles import Styles
-from widgets.horizontal_group import HorizontalGroup
-from widgets.vertical_group import VerticalGroup
+from widgets.utility_widgets.horizontal_group import HorizontalGroup
+from widgets.utility_widgets.vertical_group import VerticalGroup
 
 # Custom collapsable sidebar widget. Uses paintEvent to draw rounded corners, and a callback for the collapse/expand animation.
 class Sidebar(VerticalGroup):

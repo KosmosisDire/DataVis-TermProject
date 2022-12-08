@@ -1,14 +1,10 @@
-
-
 import asyncio
 import time
 from typing import List, Tuple
-from widgets.themed_plot import ThemedPlot
+from widgets.new_widgets.themed_plot import ThemedPlot
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
-
-
 
 class PlotHandler:
     plots: List[ThemedPlot] = []
@@ -16,7 +12,7 @@ class PlotHandler:
     time_range = (0, 0)
     plot_height = 80
 
-    moving_average = 1
+    moving_average_seconds = 1
     aggregation_interval = 1
 
     max_horizontal_marker_count = 15
@@ -28,7 +24,7 @@ class PlotHandler:
         PlotHandler.plots.append(plot)
         plot.set_time_range(*PlotHandler.time_range)
         plot.set_height(PlotHandler.plot_height)
-        plot.set_moving_average(PlotHandler.moving_average)
+        plot.set_moving_average(PlotHandler.moving_average_seconds)
         plot.set_aggregation_interval(PlotHandler.aggregation_interval)
         plot.set_markers(PlotHandler.max_horizontal_marker_count, PlotHandler.max_vertical_marker_count, PlotHandler.horizonatal_marker_interval, PlotHandler.vertical_marker_interval)
         
@@ -37,7 +33,7 @@ class PlotHandler:
         for plot in plots:
             plot.set_time_range(*PlotHandler.time_range)
             plot.set_height(PlotHandler.plot_height)
-            plot.set_moving_average(PlotHandler.moving_average)
+            plot.set_moving_average(PlotHandler.moving_average_seconds)
             plot.set_aggregation_interval(PlotHandler.aggregation_interval)
             plot.set_markers(PlotHandler.max_horizontal_marker_count, PlotHandler.max_vertical_marker_count, PlotHandler.horizonatal_marker_interval, PlotHandler.vertical_marker_interval)
 
@@ -97,13 +93,13 @@ class PlotHandler:
         for plot in PlotHandler.plots:
             plot.set_aggregation_interval(interval)
 
-    def set_moving_average(moving_average: int):
-        if moving_average == PlotHandler.moving_average or moving_average < 1:
+    def set_moving_average(moving_average_seconds: int):
+        if moving_average_seconds == PlotHandler.moving_average_seconds or moving_average_seconds < 1:
             return
 
-        PlotHandler.moving_average = moving_average
+        PlotHandler.moving_average_seconds = moving_average_seconds
         for plot in PlotHandler.plots:
-            plot.set_moving_average(moving_average)
+            plot.set_moving_average(moving_average_seconds)
 
     def set_markers(max_horizontal: int, max_vertical: int, horizontal_interval: int, vertical_interval: int):
         if (max_horizontal == PlotHandler.max_horizontal_marker_count and
