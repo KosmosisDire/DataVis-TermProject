@@ -210,6 +210,11 @@ class ThemedPlot(CustomWidget):
         def round_down_to_nearest(x: float, a: float):
             return math.floor(x / a) * a
 
+        def datetime_from_utc_to_local(utc_datetime):
+            now_timestamp = time.time()
+            offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(now_timestamp)
+            return utc_datetime + offset
+
         self.number_path = QPainterPath()
 
         x_interval = (self.time_range[1] - self.time_range[0]) / self.horizontal_label_count
@@ -219,7 +224,10 @@ class ThemedPlot(CustomWidget):
             x_converted = self.timestamp_to_x(x_position)
             datetime_x = datetime.utcfromtimestamp(x_position)
             time_str = datetime_x.strftime("%H:%M")
-
+            if self.convert_to_local_time == True:
+                local_time = datetime_from_utc_to_local(datetime_x)
+                time_str = local_time.strftime("%H:%M")
+                print(time_str)
             self.number_path.addText(x_converted - 60, self.height() + 20, QFont(Styles.theme.font_family, 6), time_str)
             self.number_path.addRect(x_converted - 65, self.height(), 1, 20)
             x_position += x_interval
