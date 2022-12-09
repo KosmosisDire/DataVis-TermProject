@@ -7,6 +7,7 @@
 ## Libraries Needed
 - [pyqt6](https://pypi.org/project/PyQt6/)
 - [pandas](https://pypi.org/project/pandas/)
+- Make sure you're on python 3.10 or higher
 
 
 ## Important Widgets:

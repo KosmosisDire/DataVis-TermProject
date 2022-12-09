@@ -32,15 +32,6 @@ class DataHandler:
         df = pd.read_csv(path)
         df.to_sql("data", DataHandler.database, if_exists="append", index=False)
 
-    #added bc of +/- value
-    def load_straight_to_db(df):
-        DataHandler.clear_table()
-        print("DATA HANDLER:")
-        print(df)
-        #df is the same, is it not being stored???
-        #its stored in the table right
-        df.to_sql("data", DataHandler.database, if_exists="append", index=False)
-
     def get(start_timestamp: int, end_timestamp: int, column_name: str) -> List[float]:
         DataHandler.cursor.execute(f"SELECT \"{column_name}\" FROM data WHERE \"Unix Timestamp (UTC)\" BETWEEN {start_timestamp * 1000} AND {end_timestamp * 1000}")
         return DataHandler.cursor.fetchall()
@@ -54,12 +45,6 @@ class DataHandler:
         start = DataHandler.cursor.fetchone()
         DataHandler.cursor.execute("SELECT MAX(\"Unix Timestamp (UTC)\") FROM data")
         end = DataHandler.cursor.fetchone()
-
-        print("START")
-        print(start)
-        print("END")
-        print(end)
-        
         return (start // 1000, end // 1000)
 
     def get_time_interval() -> int:
