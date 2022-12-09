@@ -8,7 +8,7 @@ from PyQt6.QtCore import *
 
 class PlotHandler:
     plots: List[ThemedPlot] = []
-
+    
     time_range = (0, 0)
     plot_height = 80
 
@@ -118,7 +118,9 @@ class PlotHandler:
         for plot in PlotHandler.plots:
             plot.convert_to_local_time = convert
             plot.generate_labels()
-        convert_local_timezone = convert
+        PlotHandler.convert_local_timezone = convert
+        
+
 
 
     
