@@ -184,8 +184,6 @@ class TimeRangePicker(CustomWidget):
     def move_end_by_pixels(self, pixels: int): 
         self.set_end_value(self.end_time + pixels * (self.max_time - self.min_time) / self.width())
 
-
-
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if len(self.display_data) == 0:
             return super().mousePressEvent(event)

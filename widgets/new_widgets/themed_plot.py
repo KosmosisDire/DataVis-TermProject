@@ -57,6 +57,8 @@ class ThemedPlot(CustomWidget):
         self.painter_path: QPainterPath = None
         self.number_path: QPainterPath = None
 
+        
+
         self.color = random.choice(Styles.theme.data_colors_hex)
 
         self.max_value: float = 0
@@ -271,6 +273,8 @@ class ThemedPlot(CustomWidget):
         painter.setBrush(QBrush(Styles.theme.label_color))
         painter.drawPath(self.number_path)
 
+    
+
         end = time.perf_counter_ns()
 
     def timestamp_to_x(self, timestamp: int) -> int:
@@ -290,6 +294,7 @@ class ThemedPlot(CustomWidget):
         self.final_timestamps = []
         self.painter_path = None
         self.update()
+        
 
     def set_height(self, height: int):
         self.setFixedHeight(height + self.top() + self.bottom_margin())
