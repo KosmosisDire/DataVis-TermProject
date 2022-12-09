@@ -7,19 +7,7 @@ from widgets.utility_widgets.horizontal_group import HorizontalGroup
 from widgets.utility_widgets.labeled_widget import LabeledWidget
 from widgets.themed_widgets.colored_text import ColoredText
 from widgets.utility_widgets.vertical_group import VerticalGroup
-
-from PIL import ImageFont
-
-def get_pil_text_size(text, font_size, font_name):
-    font = ImageFont.truetype("assets/" + font_name + ".ttf", font_size)
-
-    if font is None:
-        font = ImageFont.truetype(font_name, font_size)
-    if font is None:
-        font = ImageFont.truetype(font_name + ".ttf", font_size)
-
-    size = font.getsize(text)
-    return size
+from PyQt6.QtGui import QFontMetrics, QFont
 
 class ColumnStatsWindow(QWidget):
     def __init__(self, descriptions_dict: Dict[str, List], window_title: str, show_standard_description_labels: bool = False):
@@ -33,6 +21,8 @@ class ColumnStatsWindow(QWidget):
         font_size = 12
         margin = 20
 
+        font_metrics = QFontMetrics(QFont(Styles.theme.font_family, font_size))
+
         #region Calculate Column Widths
         description_widths = [0] * (len(description_names) + 1)
         # find widest description in pixels for each category
@@ -44,14 +34,11 @@ class ColumnStatsWindow(QWidget):
                 value_string = "{:.2f}".format(value)
                 if show_standard_description_labels:
                     value_string = description_names[i] + ":  " + value_string
-                description_widths[i+1] = max(description_widths[i+1], len(value_string))
+                description_widths[i+1] = max(description_widths[i+1], font_metrics.boundingRect(value_string.strip()).width())
 
             # also find key
-            description_widths[0] = max(description_widths[0], len(key))
+            description_widths[0] = max(description_widths[0], font_metrics.boundingRect(key.strip()).width())
 
-        # convert to pixels
-        for i in range(0, len(description_widths)):
-            description_widths[i] = get_pil_text_size(description_widths[i] * "a", font_size, Styles.theme.font_family)[0] + margin
 
         #endregion
             
@@ -76,7 +63,7 @@ class ColumnStatsWindow(QWidget):
 
                 widget = None
                 if show_standard_description_labels:
-                    widget = LabeledWidget(description_names[i] + ":", value_text, font_color=Styles.theme.header_text_color, font_size=font_size, spacing=0)
+                    widget = LabeledWidget(description_names[i].strip() + ":", value_text, font_color=Styles.theme.header_text_color, font_size=font_size, spacing=0)
                 else:
                     widget = value_text
 

@@ -7,21 +7,8 @@ from PyQt6.QtWidgets import QGraphicsDropShadowEffect
 from PyQt6.QtGui import QColor, QPaintEvent, QPainter, QPen, QBrush, QFont, QFontMetrics
 from PyQt6.QtCore import QRect
 from widgets.new_widgets.flow_layout import FlowLayout
-
-from PIL import ImageFont
-
 from widgets.utility_widgets.panel import Panel
 
-def get_pil_text_size(text, font_size, font_name):
-    font = ImageFont.truetype("assets/" + font_name + ".ttf", font_size)
-
-    if font is None:
-        font = ImageFont.truetype(font_name, font_size)
-    if font is None:
-        font = ImageFont.truetype(font_name + ".ttf", font_size)
-
-    size = font.getsize(text)
-    return size
 
 class TagCheckbox(QCheckBox):
     def __init__(self, tag_name: str, padding: int, stateChanged: Callable[[bool, str], Any], font_size = Styles.theme.button_font_size, shadow: bool = True):
