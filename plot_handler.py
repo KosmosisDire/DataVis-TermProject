@@ -6,6 +6,8 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
+from widgets.new_widgets.time_range_picker import TimeRangePicker
+
 class PlotHandler:
     plots: List[ThemedPlot] = []
     
@@ -18,8 +20,6 @@ class PlotHandler:
     horizontal_label_count = 15
     vertical_label_count = 10
     vertical_label_interval = 0.5
-
-    convert_local_timezone = False
 
     def add_plot(plot: ThemedPlot):
         PlotHandler.plots.append(plot)
@@ -118,7 +118,11 @@ class PlotHandler:
         for plot in PlotHandler.plots:
             plot.convert_to_local_time = convert
             plot.generate_labels()
-        PlotHandler.convert_local_timezone = convert
+
+        if(TimeRangePicker.instance is not None):
+            TimeRangePicker.instance.convert_to_local_time = convert
+            TimeRangePicker.instance.update()
+        
         
 
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 import time
 from typing import Any, Callable, Tuple
@@ -5,7 +6,6 @@ from PyQt6.QtWidgets import *
 from PyQt6 import *
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
-from plot_handler import PlotHandler
 from styles import Styles
 from widgets.utility_widgets.custom_widget import CustomWidget
 
@@ -16,8 +16,13 @@ def clamp(num, min_value, max_value):
 
 # this widget has two sliders which collider with eachother and are dragged by the mouse. Used to select a time window.
 class TimeRangePicker(CustomWidget):
+
+    instance: TimeRangePicker = None
+
     def __init__(self, height: int, valueChanged: Callable[[Tuple[int, int]], Any] = None, push_behavior: bool = True):
         super().__init__()
+
+        TimeRangePicker.instance = self
 
         self.right_bubble: QPixmap = QPixmap("assets/right_bubble.png")
         self.left_bubble: QPixmap = QPixmap("assets/left_bubble.png")
@@ -51,6 +56,9 @@ class TimeRangePicker(CustomWidget):
 
         self._last_start_time = self.start_time
         self._last_end_time = self.end_time
+
+        self.convert_to_local_time = False
+
 
     def paintEvent(self, event: QPaintEvent):
         self._update_handles()
@@ -96,7 +104,7 @@ class TimeRangePicker(CustomWidget):
             painter.setFont(QFont("Segoe UI", 8))
             start_datetime = datetime.utcfromtimestamp(self.start_time)
             end_datetime = datetime.utcfromtimestamp(self.end_time)
-            if PlotHandler.convert_local_timezone == True:
+            if self.convert_to_local_time == True:
                 start_datetime = datetime_from_utc_to_local(start_datetime)
                 end_datetime = datetime_from_utc_to_local(end_datetime)
                 

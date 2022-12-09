@@ -76,6 +76,7 @@ class MainWindow(QMainWindow):
         background = Panel(Styles.theme.light_background_color_hex)
         self.base = background.addWidget(HorizontalGroup())
 
+
         self.sidebar : Sidebar = self.base.addWidget(self.create_sidebar())
         self.sidebar.widthAnimation.finished.connect(PlotHandler.regenerate_plots)
         right_area = self.base.addWidget(VerticalGroup())
@@ -85,7 +86,6 @@ class MainWindow(QMainWindow):
         graph_header.setShadow(xOffset=4)
 
         self.time_picker = TimeRangePicker(75, PlotHandler.set_time_range)
-        PlotHandler.time_ranger = self.time_picker
         graph_header.addWidget(self.time_picker)
 
         self.scroll_area: ThemedScrollArea = right_area.addWidget(ThemedScrollArea())
