@@ -9,8 +9,8 @@ class Styles:
         self.header_bar_color_hex: str = "#2C2621"
         self.label_color_hex: str = "#D9C5A8"
         self.button_text_color_hex: str = "#E3BF8C"
-        self.light_background_color_hex: str = "#2C2621"
-        self.mid_background_color_hex: str = "#342B23"
+        self.light_background_color_hex: str = "#3d3429"
+        self.mid_background_color_hex: str = "#2C2621"
         self.dark_background_color_hex: str = "#231E1A"
         self.button_color_hex: str = "#3D3429"
         self.button_hover_color_hex: str = "#4D4239"
@@ -21,7 +21,7 @@ class Styles:
         self.seperator_color_hex: str = "#707070"
         self.data_colors_hex: list[str] = ["#EBB66F", "#A9EB6F", "#6FBDEB", "#EB6F80", "#FFFFFF"]
         self.shadow_color_hex: str = "#000000"
-        self.shadow_opacity: float = 0.4
+        self.shadow_opacity: float = 0.25
 
         self.update_colors_from_hex()
 

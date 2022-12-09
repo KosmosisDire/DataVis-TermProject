@@ -35,7 +35,7 @@ class ThemedButton(QPushButton):
         if shadow: self.setShadow()
         self.setFont(QFont("Segoe UI", Styles.theme.button_font_size))
 
-    def setShadow(self, blurRadius: int = Styles.theme.control_radius, xOffset: int = 0, yOffset: int = 4, color: QtGui.QColor = Styles.theme.shadow_color):
+    def setShadow(self, blurRadius: int = Styles.theme.control_shadow_radius, xOffset: int = 0, yOffset: int = 4, color: QtGui.QColor = Styles.theme.shadow_color):
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(blurRadius)
         shadow.setOffset(xOffset, yOffset)

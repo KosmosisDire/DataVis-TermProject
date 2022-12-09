@@ -36,7 +36,7 @@ def binarySearch(data, val):
 
 
 class ThemedPlot(CustomWidget):
-    def __init__(self, height: int = 80, horizontal_label_count = 10, vertical_label_count = 5, vertical_label_interval = 1):
+    def __init__(self, graph_title, height: int = 80, horizontal_label_count = 10, vertical_label_count = 5, vertical_label_interval = 1):
         super().__init__()
 
         self.time_range: Tuple[int, int] = (0, 0)
@@ -76,6 +76,8 @@ class ThemedPlot(CustomWidget):
         self.horizontal_labels: List[str] = []
 
         self.convert_to_local_time = False
+
+        self.graph_title = graph_title
 
     def plot(self, X: List[float], Y: List[float]):
         self.data = Y
@@ -216,8 +218,8 @@ class ThemedPlot(CustomWidget):
 
         self.number_path = QPainterPath()
 
+        # generate x time labels
         x_interval = (self.time_range[1] - self.time_range[0]) / self.horizontal_label_count
-
         x_position = self.time_range[0];
         while x_position < self.time_range[1] - x_interval / 2.0:
             x_converted = self.timestamp_to_x(x_position)
@@ -227,18 +229,22 @@ class ThemedPlot(CustomWidget):
             if self.convert_to_local_time == True:
                 local_time = datetime_from_utc_to_local(datetime_x)
                 time_str = local_time.strftime("%H:%M")
-            self.number_path.addText(x_converted - 60, self.height() + 20, QFont(Styles.theme.font_family, 6), time_str)
+            self.number_path.addText(x_converted - 60, self.height() + 20, QFont(Styles.theme.font_family, 8), time_str)
             self.number_path.addRect(x_converted - 65, self.height(), 1, 20)
             x_position += x_interval
 
+        # generate y value labels
         normal_range_y = self.max_value - self.min_value
-
         last_number = math.inf
         for i in range(0, self.vertical_label_count):
             value = round_down_to_nearest(self.min_value + normal_range_y * (i / self.vertical_label_count), self.vertical_label_interval)
             if value == last_number: continue
-            self.number_path.addText(-28, self.bottom() - (i/self.vertical_label_count) * self.height(), QFont(Styles.theme.font_family, 6), f"{value:>6.2g}")
+            self.number_path.addText(-28, self.bottom() - (i/self.vertical_label_count) * self.height(), QFont(Styles.theme.font_family, 8), f"{value:>6.2g}")
             last_number = value
+
+
+        # add graph title to the top left corner of the graph
+        self.number_path.addText(7, 25, QFont(Styles.theme.font_family, 8), self.graph_title)
 
         self.update()
 
@@ -249,18 +255,18 @@ class ThemedPlot(CustomWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         painter.setBrush(QBrush(Styles.theme.dark_background_color))
-        painter.setPen(QPen(Styles.theme.mid_background_color.darker(180), 1))
+        painter.setPen(QPen(Styles.theme.dark_background_color.darker(130), 1))
         painter.drawRoundedRect(self.rect(), Styles.theme.panel_radius, Styles.theme.panel_radius)
 
         # shadow
         painter.setBrush(QBrush(QColor("transparent")))
-        painter.setPen(QPen(Styles.theme.mid_background_color.darker(170), 2))
+        painter.setPen(QPen(Styles.theme.dark_background_color.darker(120), 2))
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), Styles.theme.panel_radius, Styles.theme.panel_radius)
 
-        painter.setPen(QPen(Styles.theme.mid_background_color.darker(160), 3))
+        painter.setPen(QPen(Styles.theme.dark_background_color.darker(110), 3))
         painter.drawRoundedRect(self.rect().adjusted(3, 3, -3, -3), Styles.theme.panel_radius, Styles.theme.panel_radius)
 
-        painter.setPen(QPen(Styles.theme.mid_background_color.darker(150), 4))
+        painter.setPen(QPen(Styles.theme.dark_background_color.darker(105), 4))
         painter.drawRoundedRect(self.rect().adjusted(6, 6, -6, -6), Styles.theme.panel_radius, Styles.theme.panel_radius)
 
         if len(self.final_data) == 0 or not self.painter_path:

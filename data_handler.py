@@ -15,7 +15,11 @@ class DataHandler:
     database.row_factory = lambda c, row: row[0]
     cursor: sqlite3.Cursor = database.cursor()
 
+    df: pd.DataFrame = None
+
     time_interval = math.inf
+
+    is_data_imported = False
     
     def clear_table():
         try:
@@ -25,12 +29,14 @@ class DataHandler:
             return
             
         DataHandler.database.commit()
+        DataHandler.is_data_imported = False
 
     def import_data_from_csv(path: str):
         print("Importing data from csv...")
         DataHandler.clear_table()
-        df = pd.read_csv(path)
-        df.to_sql("data", DataHandler.database, if_exists="append", index=False)
+        DataHandler.df = pd.read_csv(path)
+        DataHandler.df.to_sql("data", DataHandler.database, if_exists="append", index=False)
+        DataHandler.is_data_imported = True
 
     def get(start_timestamp: int, end_timestamp: int, column_name: str) -> List[float]:
         DataHandler.cursor.execute(f"SELECT \"{column_name}\" FROM data WHERE \"Unix Timestamp (UTC)\" BETWEEN {start_timestamp * 1000} AND {end_timestamp * 1000}")
@@ -59,4 +65,15 @@ class DataHandler:
         DataHandler.cursor.execute("SELECT \"Unix Timestamp (UTC)\" FROM data")
         stamps = DataHandler.cursor.fetchall()
         return [stamp // 1000 for stamp in stamps]
+
+    def get_column_names_from_file(path: str) -> List[str] | bool:
+        if not path.endswith(".csv"):
+            return False
+
+        try:
+            df = pd.read_csv(path)
+            names = list(df.columns.values)
+            return names
+        except:
+            return False
 

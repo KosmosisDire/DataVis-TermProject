@@ -57,11 +57,19 @@ class PlotHandler:
         for plot in PlotHandler.plots:
             plot.erase()
 
-    def regenerate_plots():
+    def redraw_plots():
         start = time.perf_counter_ns()
 
         for plot in PlotHandler.plots:
             plot.render_plot()
+
+        # print(f"Regenerated plots in {time.perf_counter_ns() - start} ns")
+
+    def regenerate_plots():
+        start = time.perf_counter_ns()
+
+        for plot in PlotHandler.plots:
+            plot.set_moving_average(PlotHandler.moving_average_seconds)
 
         # print(f"Regenerated plots in {time.perf_counter_ns() - start} ns")
 

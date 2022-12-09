@@ -80,7 +80,7 @@ class Sidebar(VerticalGroup):
         painter.drawRect(QRectF(0, 0, Styles.theme.panel_radius, self.height())) # left corners are filled so they aren't rounded
 
         # header
-        painter.setBrush(QBrush(Styles.theme.light_background_color))
+        painter.setBrush(QBrush(Styles.theme.header_bar_color))
         painter.drawRoundedRect(QRectF(0, 0, self.width(), self.header_height), Styles.theme.panel_radius, Styles.theme.panel_radius) 
         painter.drawRect(QRectF(0, 0, Styles.theme.panel_radius, self.header_height)) # left corners are filled so they aren't rounded
         painter.drawRect(QRectF(self.width() - Styles.theme.panel_radius, self.header_height-Styles.theme.panel_radius, Styles.theme.panel_radius, Styles.theme.panel_radius)) # bottom right corner is filled so it isn't rounded
