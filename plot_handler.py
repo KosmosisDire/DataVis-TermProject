@@ -19,6 +19,8 @@ class PlotHandler:
     vertical_label_count = 10
     vertical_label_interval = 0.5
 
+    convert_local_timezone = False
+
     def add_plot(plot: ThemedPlot):
         PlotHandler.plots.append(plot)
         plot.set_time_range(*PlotHandler.time_range)
@@ -116,6 +118,7 @@ class PlotHandler:
         for plot in PlotHandler.plots:
             plot.convert_to_local_time = convert
             plot.generate_labels()
+        convert_local_timezone = convert
 
 
     

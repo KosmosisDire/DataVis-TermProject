@@ -228,7 +228,6 @@ class ThemedPlot(CustomWidget):
             if self.convert_to_local_time == True:
                 local_time = datetime_from_utc_to_local(datetime_x)
                 time_str = local_time.strftime("%H:%M")
-
             self.number_path.addText(x_converted - 60, self.height() + 20, QFont(Styles.theme.font_family, 6), time_str)
             self.number_path.addRect(x_converted - 65, self.height(), 1, 20)
             x_position += x_interval
