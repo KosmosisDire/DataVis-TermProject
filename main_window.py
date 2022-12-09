@@ -99,6 +99,7 @@ class MainWindow(QMainWindow):
         PlotHandler.set_plot_height(self.plot_height)
         for i in range(len(self.graph_columns)):
             graph = ThemedPlot()
+            graph.setToolTip(self.graph_columns[i])
             PlotHandler.add_plot(graph)
             self.scroll_area.addWidget(graph)
 
