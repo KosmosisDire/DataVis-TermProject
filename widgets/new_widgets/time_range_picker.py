@@ -6,7 +6,6 @@ from PyQt6 import *
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import *
 from plot_handler import PlotHandler
-
 from styles import Styles
 from widgets.utility_widgets.custom_widget import CustomWidget
 
@@ -22,6 +21,7 @@ class TimeRangePicker(CustomWidget):
 
         self.right_bubble: QPixmap = QPixmap("assets/right_bubble.png")
         self.left_bubble: QPixmap = QPixmap("assets/left_bubble.png")
+
 
         self.setContentsMargins(Styles.theme.close_spacing + 100, Styles.theme.close_spacing, Styles.theme.close_spacing + 100, Styles.theme.close_spacing)
         self.setMinimumWidth(640)
@@ -55,6 +55,7 @@ class TimeRangePicker(CustomWidget):
     def paintEvent(self, event: QPaintEvent):
         self._update_handles()
 
+
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(QPen(Qt.GlobalColor.transparent))
@@ -77,6 +78,7 @@ class TimeRangePicker(CustomWidget):
             now_timestamp = time.time()
             offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(now_timestamp)
             return utc_datetime + offset
+
         if len(self.display_data) > 0:
             #draw data path
             painter.setBrush(QBrush(QColor("transparent")))
@@ -92,14 +94,14 @@ class TimeRangePicker(CustomWidget):
             # draw time labels
             painter.setPen(QPen(Styles.theme.label_color, 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
             painter.setFont(QFont("Segoe UI", 8))
-            UTC_datetime = datetime.utcfromtimestamp(self.start_time)
+            start_datetime = datetime.utcfromtimestamp(self.start_time)
+            end_datetime = datetime.utcfromtimestamp(self.end_time)
             if PlotHandler.convert_local_timezone == True:
-                local_time = datetime_from_utc_to_local(UTC_datetime)
-                painter.drawText(self._start_rect.left() - self.left_bubble.width() - bubble_x_offset-2, self.bottom() + bubble_y_offset + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, local_time .strftime("%b %d, %H:%M"))
-                painter.drawText(self._end_rect.right() + bubble_x_offset + 2, self.bottom() + bubble_y_offset + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, local_time.strftime("%b %d, %H:%M"))
-            else:
-                painter.drawText(self._start_rect.left() - self.left_bubble.width() - bubble_x_offset-2, self.bottom() + bubble_y_offset + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, UTC_datetime .strftime("%b %d, %H:%M"))
-                painter.drawText(self._end_rect.right() + bubble_x_offset + 2, self.bottom() + bubble_y_offset + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, UTC_datetime.strftime("%b %d, %H:%M"))
+                start_datetime = datetime_from_utc_to_local(start_datetime)
+                end_datetime = datetime_from_utc_to_local(end_datetime)
+                
+            painter.drawText(self._start_rect.left() - self.left_bubble.width() - bubble_x_offset-2, self.bottom() + bubble_y_offset + 6, self.left_bubble.width(), self.left_bubble.height(), Qt.AlignmentFlag.AlignRight, start_datetime .strftime("%b %d, %H:%M"))
+            painter.drawText(self._end_rect.right() + bubble_x_offset + 2, self.bottom() + bubble_y_offset + 6, self.right_bubble.width(), self.right_bubble.height(), Qt.AlignmentFlag.AlignLeft, end_datetime.strftime("%b %d, %H:%M"))
 
         # draw handles
         painter.setBrush(QBrush(Styles.theme.label_color))
