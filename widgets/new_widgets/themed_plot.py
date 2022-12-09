@@ -14,7 +14,6 @@ from widgets.utility_widgets.custom_widget import CustomWidget
 
 import numpy as np
 
-
 def clamp(num, min_value, max_value):
    return max(min(num, max_value), min_value)
 
@@ -58,8 +57,6 @@ class ThemedPlot(CustomWidget):
 
         self.painter_path: QPainterPath = None
         self.number_path: QPainterPath = None
-
-        
 
         self.color = random.choice(Styles.theme.data_colors_hex)
 

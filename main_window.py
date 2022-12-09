@@ -97,6 +97,7 @@ class MainWindow(QMainWindow):
         background = Panel(Styles.theme.light_background_color_hex)
         self.base = background.addWidget(HorizontalGroup())
 
+
         self.sidebar : Sidebar = self.base.addWidget(self.create_sidebar())
         self.sidebar.widthAnimation.finished.connect(PlotHandler.regenerate_plots)
         right_area = self.base.addWidget(VerticalGroup())

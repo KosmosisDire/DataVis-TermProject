@@ -8,8 +8,6 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
-
-
 class PlotHandler:
     plots: List[ThemedPlot] = []
 
@@ -19,10 +17,9 @@ class PlotHandler:
     moving_average = 1
     aggregation_interval = 1
 
-    max_horizontal_marker_count = 15
-    max_vertical_marker_count = 10
-    horizonatal_marker_interval = 5000
-    vertical_marker_interval = 0.5
+    horizontal_label_count = 15
+    vertical_label_count = 10
+    vertical_label_interval = 0.5
 
     def add_plot(plot: ThemedPlot):
         PlotHandler.plots.append(plot)
@@ -118,6 +115,7 @@ class PlotHandler:
         PlotHandler.vertical_marker_interval = vertical_interval
         for plot in PlotHandler.plots:
             plot.set_markers(max_horizontal, max_vertical, horizontal_interval, vertical_interval)
+
 
 
     
