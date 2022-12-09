@@ -119,6 +119,7 @@ class PlotHandler:
             plot.convert_to_local_time = convert
             plot.generate_labels()
         PlotHandler.convert_local_timezone = convert
+        
 
 
 
