@@ -85,6 +85,7 @@ class MainWindow(QMainWindow):
         graph_header.setShadow(xOffset=4)
 
         self.time_picker = TimeRangePicker(75, PlotHandler.set_time_range)
+        PlotHandler.time_ranger = self.time_picker
         graph_header.addWidget(self.time_picker)
 
         self.scroll_area: ThemedScrollArea = right_area.addWidget(ThemedScrollArea())

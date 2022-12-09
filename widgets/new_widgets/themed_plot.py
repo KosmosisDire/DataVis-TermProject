@@ -14,7 +14,9 @@ from widgets.utility_widgets.custom_widget import CustomWidget
 
 import numpy as np
 
-from widgets.new_widgets.time_range_picker import clamp
+
+def clamp(num, min_value, max_value):
+   return max(min(num, max_value), min_value)
 
 def binarySearch(data, val):
     lo, hi = 0, len(data) - 1
