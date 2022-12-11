@@ -1,4 +1,6 @@
 .vscode/
 /data.db
+/dist
+/build
 
 *.pyc
