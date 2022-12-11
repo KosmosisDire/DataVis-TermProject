@@ -1,4 +1,6 @@
 from __future__ import annotations
+import threading
+import time
 from typing import Dict, List
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QFileDialog
@@ -102,17 +104,14 @@ class MainWindow(QMainWindow):
         self.scroll_area.setContentsMargins((0, Styles.theme.medium_spacing, 0, Styles.theme.medium_spacing))
         self.scroll_area.verticalScrollBar().valueChanged.connect(PlotHandler.redraw_plots) #update the graphs when scrolling
 
-        self.create_graphs()
-
         self.setCentralWidget(background)
 
     def create_graphs(self):
-        PlotHandler.erase_plots()
         PlotHandler.clear_plots()
         PlotHandler.set_plot_height(self.plot_height)
 
         for i in range(len(self.graph_columns)):
-            graph = ThemedPlot(self.graph_columns[i])
+            graph = ThemedPlot(self.graph_columns[i], i)
             graph.setToolTip(self.graph_columns[i])
             PlotHandler.add_plot(graph)
             self.scroll_area.addWidget(graph)
@@ -121,12 +120,18 @@ class MainWindow(QMainWindow):
         self.time_picker.set_time_range(DataHandler.get_time_range())
         self.time_picker.set_plot_data(DataHandler.get_all(self.graph_columns[0]))
 
-        print(self.graph_columns)
-
-        PlotHandler.set_time_range(DataHandler.get_time_range())
         for i, column in enumerate(self.graph_columns):
             PlotHandler.plots[i].plot(DataHandler.get_all(column))
             PlotHandler.plots[i].update()
+
+        PlotHandler.set_time_range(DataHandler.get_time_range())
+
+        regen_thread = threading.Thread(target=self.regen_plots_delayed)
+        regen_thread.start()
+    
+    def regen_plots_delayed(self):
+        time.sleep(0.05)
+        PlotHandler.redraw_plots()
 
     def create_sidebar(self) -> Sidebar:
         #File heading
@@ -184,8 +189,9 @@ class MainWindow(QMainWindow):
         self.w.show()
 
     def clear_data(self):
+        self.graph_columns.clear()
         DataHandler.clear_table()
-        PlotHandler.erase_plots()
+        PlotHandler.clear_plots()
         self.time_picker.clear_data()
 
     def resizeEvent(self, event):

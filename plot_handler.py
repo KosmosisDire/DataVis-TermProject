@@ -1,5 +1,3 @@
-import asyncio
-import time
 from typing import List, Tuple
 from widgets.new_widgets.themed_plot import ThemedPlot
 from PyQt6.QtWidgets import *
@@ -39,9 +37,11 @@ class PlotHandler:
             plot.set_labels(PlotHandler.horizontal_label_count, PlotHandler.vertical_label_count, PlotHandler.vertical_label_interval)
 
     def remove_plot(plot: ThemedPlot):
+        plot.deleteLater()
         PlotHandler.plots.remove(plot)
 
     def remove_plot_at(index: int):
+        PlotHandler.plots[index].deleteLater()
         PlotHandler.plots.pop(index)
 
     def get_plot(index: int) -> ThemedPlot:
@@ -51,6 +51,9 @@ class PlotHandler:
         return len(PlotHandler.plots)
 
     def clear_plots():
+        for plot in PlotHandler.plots:
+            plot.deleteLater()
+            
         PlotHandler.plots.clear()
     
     def erase_plots():
@@ -58,7 +61,7 @@ class PlotHandler:
             plot.erase()
 
     def redraw_plots():
-        start = time.perf_counter_ns()
+        # start = time.perf_counter_ns()
 
         for plot in PlotHandler.plots:
             plot.render_plot()
@@ -66,7 +69,7 @@ class PlotHandler:
         # print(f"Regenerated plots in {time.perf_counter_ns() - start} ns")
 
     def regenerate_plots():
-        start = time.perf_counter_ns()
+        # start = time.perf_counter_ns()
 
         for plot in PlotHandler.plots:
             plot.set_moving_average(PlotHandler.moving_average_seconds)
@@ -77,14 +80,14 @@ class PlotHandler:
         if time_range == PlotHandler.time_range or time_range[0] > time_range[1]:
             return
         
-        start = time.perf_counter_ns()
+        # start = time.perf_counter_ns()
 
         PlotHandler.time_range = time_range
         for plot in PlotHandler.plots:
             plot.set_time_range(*time_range)
 
-
         # print(f"Set time range in {time.perf_counter_ns() - start} ns")
+        
 
     def set_plot_height(height: int):
         if height == PlotHandler.plot_height or height < 1:

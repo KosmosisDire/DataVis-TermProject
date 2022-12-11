@@ -51,6 +51,9 @@ class ColumnStatsWindow(QWidget):
         for key, description in descriptions_dict.items():
             row = HorizontalGroup()
 
+            if show_standard_description_labels and len(description) != len(description_names):
+                continue
+
             row_name = row.addWidget(ColoredText(key, color=Styles.theme.header_text_color, fontSize=font_size))
             row_name.setFixedWidth(int(description_widths[0] * 1.5))
             for i in range(0, len(description)):

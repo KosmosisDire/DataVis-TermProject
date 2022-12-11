@@ -1,4 +1,6 @@
+import asyncio
 from time import sleep
+import time
 from PyQt6.QtWidgets import QWidget
 from data_handler import DataHandler
 from plot_handler import PlotHandler
@@ -12,24 +14,24 @@ from widgets.utility_widgets.horizontal_group import HorizontalGroup
 from widgets.themed_widgets.themed_textbox import ThemedTextbox
 from widgets.themed_widgets.themed_button import ThemedButton
 from PyQt6.QtCore import Qt # AlignmentFlag
-from PyQt6.QtGui import QCloseEvent, QIcon
+from PyQt6.QtGui import QCloseEvent, QIcon, QColor
 
 import main_window
-
 
 class ImportWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Import Data")
         self.setWindowIcon(QIcon("assets/logo.png"))
-        self.setMinimumSize(700, 500)
-        self.resize(700, 500)
+        self.setMinimumSize(500, 600)
+        self.resize(500, 600)
 
         self.csv_path: str = None
         self.data_handler: DataHandler = None
         self.csv_path_textbox: ThemedTextbox = None
         self.column_selector: TagSelector = None
         self.is_path_valid = False
+        self.error_message_text: ColoredText = None
 
         self.create_UI()
     
@@ -53,14 +55,17 @@ class ImportWindow(QWidget):
         browse_button = path_browse_horizontal.addWidget(ThemedButton("Browse", clicked=self.browse_for_csv))
         browse_button.setFixedWidth(100)
 
-        vertical_controls_layout.addWidget(HorizontalSeperator(Styles.theme.medium_spacing, 1))
+        vertical_controls_layout.addWidget(HorizontalSeperator(Styles.theme.huge_spacing, 1))
 
         vertical_controls_layout.addWidget(ColoredText("Columns To Import:", Styles.theme.header_text_color, Styles.theme.header_font_size))
         self.column_selector = vertical_controls_layout.addWidget(TagSelector([]))
 
         vertical_controls_layout.addWidget(HorizontalSeperator(Styles.theme.medium_spacing, 1))
 
-        vertical_controls_layout.addWidget(ThemedButton("Import", clicked=self.import_data))
+        import_button:ThemedButton = vertical_controls_layout.addWidget(ThemedButton("Import"))
+        import_button.clicked.connect(self.import_data, Qt.ConnectionType.QueuedConnection)
+
+        self.error_message_text: ColoredText = vertical_controls_layout.addWidget(ColoredText("", QColor(223, 69, 58), 14, margins=(0, Styles.theme.medium_spacing, 0, Styles.theme.medium_spacing)))
 
 
         self.setLayout(vertical_layout.layout())
@@ -93,16 +98,22 @@ class ImportWindow(QWidget):
 
     def import_data(self):
         if not self.is_path_valid or self.csv_path is None or self.csv_path == "":
+            self.error_message_text.setText("Error importing data: \nThe selected .csv file is invalid.")
             return
 
-        main_window.MainWindow.instance.graph_columns.clear()
+        if len(self.column_selector.get_selected_tags()) == 0:
+            self.error_message_text.setText("Error importing data: \nNo columns selected to import!")
+            return
+
+        PlotHandler.clear_plots()
         main_window.MainWindow.instance.graph_columns = self.column_selector.get_selected_tags()
-        DataHandler.clear_table()
-        DataHandler.import_data_from_csv(self.csv_path)
         main_window.MainWindow.instance.create_graphs()
+
+        if not DataHandler.import_data_from_csv(self.csv_path):
+            self.error_message_text.setText("Error importing data: \nMake sure the .csv has a column named 'Unix Timestamp (UTC)'")
+            PlotHandler.clear_plots()
+            return
+
+        self.error_message_text.setText("")
+
         main_window.MainWindow.instance.populate_graphs()
-
-    def closeEvent(self, a0: QCloseEvent) -> None:
-        PlotHandler.regenerate_plots()
-        return super().closeEvent(a0)
-

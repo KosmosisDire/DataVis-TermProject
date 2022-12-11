@@ -30,13 +30,25 @@ class DataHandler:
             
         DataHandler.database.commit()
         DataHandler.is_data_imported = False
+        
+        if DataHandler.df is not None:
+            DataHandler.df.drop(DataHandler.df.index, inplace=True)
+            DataHandler.df = None
 
-    def import_data_from_csv(path: str):
+    def import_data_from_csv(path: str) -> bool:
         print("Importing data from csv...")
         DataHandler.clear_table()
         DataHandler.df = pd.read_csv(path)
+
+        if "Unix Timestamp (UTC)" not in list(DataHandler.df.columns):
+            print("Invalid data format")
+            DataHandler.clear_table()
+            return False
+
         DataHandler.df.to_sql("data", DataHandler.database, if_exists="append", index=False)
         DataHandler.is_data_imported = True
+
+        return True
 
     def get(start_timestamp: int, end_timestamp: int, column_name: str) -> List[float]:
         DataHandler.cursor.execute(f"SELECT \"{column_name}\" FROM data WHERE \"Unix Timestamp (UTC)\" BETWEEN {start_timestamp * 1000} AND {end_timestamp * 1000}")

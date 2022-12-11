@@ -11,7 +11,8 @@ from widgets.utility_widgets.custom_widget import CustomWidget
 
 class ThemedButton(QPushButton):
     def __init__(self, text: str, clicked: callable = None, shadow: bool = True):
-        QPushButton.__init__(self, text, clicked=clicked)
+        if clicked is not None: QPushButton.__init__(self, text, clicked=clicked)
+        else: QPushButton.__init__(self, text)
 
         self.setFixedHeight(Styles.theme.button_height)
 

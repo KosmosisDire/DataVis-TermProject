@@ -36,7 +36,8 @@ def binarySearch(data, val):
 
 
 class ThemedPlot(CustomWidget):
-    def __init__(self, graph_title, height: int = 80, horizontal_label_count = 10, vertical_label_count = 5, vertical_label_interval = 1):
+
+    def __init__(self, graph_title:str, graph_index:int, height: int = 80, horizontal_label_count = 10, vertical_label_count = 5, vertical_label_interval = 1):
         super().__init__()
 
         self.time_range: Tuple[int, int] = (0, 0)
@@ -78,12 +79,13 @@ class ThemedPlot(CustomWidget):
         self.convert_to_local_time = False
 
         self.graph_title = graph_title
+        self.graph_index = graph_index
 
     def plot(self, X: List[float], Y: List[float]):
         self.data = Y
         self.timestamps = X
 
-        if(self.min_value == 0 and self.max_value == 0):
+        if self.max_value == 0 and self.min_value == 0:
             self.max_value = max(self.data)
             self.min_value = min(self.data)
 
@@ -93,7 +95,7 @@ class ThemedPlot(CustomWidget):
         self.data = Y
         self.timestamps = DataHandler.get_timestamps()
 
-        if(self.min_value == 0 and self.max_value == 0):
+        if self.max_value == 0 and self.min_value == 0:
             self.max_value = max(self.data)
             self.min_value = min(self.data)
 
@@ -140,8 +142,8 @@ class ThemedPlot(CustomWidget):
         self.final_data = []
         self.final_timestamps = []
 
-        self.max_value = self.moving_avg_data[0]
-        self.min_value = self.moving_avg_data[-1]
+        # self.max_value = self.moving_avg_data[0]
+        # self.min_value = self.moving_avg_data[-1]
 
         y_avg: float = 0
         x_avg: int = 0
@@ -174,7 +176,7 @@ class ThemedPlot(CustomWidget):
         if len(self.final_data) == 0: return
         if not self.is_on_screen(): return
         
-        start = time.perf_counter_ns()
+        # start = time.perf_counter_ns()
         
         start_range_estimation = max(binarySearch(self.final_timestamps, self.time_range[0]) - 1, 0)
         end_range_estimation = min(binarySearch(self.final_timestamps, self.time_range[1]) + 1, len(self.final_timestamps)-1)
@@ -183,12 +185,17 @@ class ThemedPlot(CustomWidget):
         start_range_estimation += 1
 
         self.painter_path = QPainterPath()
-        self.painter_path.moveTo(initial_pos + QPointF(0, self.height()))
+        self.painter_path.moveTo(initial_pos + QPointF(-120, self.height() * 2))
+        self.painter_path.lineTo(initial_pos + QPointF(-120, 0))
+        self.painter_path.moveTo(initial_pos + QPointF(-120, 0))
         self.painter_path.lineTo(initial_pos)
         
         max_val_local = self.final_data[start_range_estimation]
         min_val_local = self.final_data[start_range_estimation]
 
+        last_timestamp: int = self.final_timestamps[start_range_estimation]
+        last_value: int = self.final_data[start_range_estimation]
+        direction: QVector2D = QVector2D(0, 0)
         for i in range(start_range_estimation, end_range_estimation):
             timestamp: int = self.timestamp_to_x(self.final_timestamps[i])
             value: float = self.value_to_y(self.final_data[i], self.max_value, self.min_value)
@@ -198,12 +205,15 @@ class ThemedPlot(CustomWidget):
             
             self.painter_path.lineTo(timestamp, value)
 
-        self.painter_path.lineTo(self.painter_path.currentPosition() + QPointF(0, self.height()))
+            direction = QVector2D(timestamp - last_timestamp, value - last_value)
+
+            last_timestamp = timestamp
+            last_value = value
+
+        self.painter_path.lineTo(self.painter_path.currentPosition() + QPointF(direction.x() * 2, 0))
 
         self.max_value = (self.max_value + max_val_local) / 2
         self.min_value = (self.min_value + min_val_local) / 2
-
-        #self.painter_path = self.painter_path.simplified()
 
         self.generate_labels()
 
@@ -249,8 +259,7 @@ class ThemedPlot(CustomWidget):
         self.update()
 
     def paintEvent(self, event: QPaintEvent):
-        start = time.perf_counter_ns()
-
+        # start = time.perf_counter_ns()
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -285,10 +294,7 @@ class ThemedPlot(CustomWidget):
         painter.setPen(QPen(QColor("transparent")))
         painter.setBrush(QBrush(Styles.theme.label_color))
         painter.drawPath(self.number_path)
-
-    
-
-        end = time.perf_counter_ns()
+        # end = time.perf_counter_ns()
 
     def timestamp_to_x(self, timestamp: int) -> int:
         return int(self.width() * (timestamp - self.time_range[0]) / max(self.time_range[1] - self.time_range[0], 0.001)) + self.left() 
